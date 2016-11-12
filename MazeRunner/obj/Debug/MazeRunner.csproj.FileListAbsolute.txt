@@ -40,3 +40,5 @@ E:\MazeRunner\MazeRunner\obj\Debug\MainWindow.baml
 E:\MazeRunner\MazeRunner\obj\Debug\MazeRunner.g.resources
 E:\MazeRunner\MazeRunner\obj\Debug\MazeRunner.Properties.Resources.resources
 E:\MazeRunner\MazeRunner\obj\Debug\MazeRunner.csproj.GenerateResource.Cache
+E:\MazeRunner\MazeRunner\bin\Debug\MathNet.Numerics.dll
+E:\MazeRunner\MazeRunner\bin\Debug\MathNet.Numerics.xml
