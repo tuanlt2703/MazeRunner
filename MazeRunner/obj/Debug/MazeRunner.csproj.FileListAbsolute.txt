@@ -40,3 +40,5 @@ E:\MazeRunner\MazeRunner\obj\Debug\MainWindow.baml
 E:\MazeRunner\MazeRunner\obj\Debug\MazeRunner.g.resources
 E:\MazeRunner\MazeRunner\obj\Debug\MazeRunner.Properties.Resources.resources
 E:\MazeRunner\MazeRunner\obj\Debug\MazeRunner.csproj.GenerateResource.Cache
+C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\Controls\Chaser.g.cs
+C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\Controls\Chaser.baml

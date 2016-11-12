@@ -28,7 +28,7 @@ namespace MazeRunner.Controls
             InitializeComponent();
 
             Mummy = new Image();
-            Mummy.Source = new BitmapImage(new Uri(@"pack://application:,,,/MazeRunner;component/Images/Mummy.png"));
+            Mummy.Source = new BitmapImage(new Uri(@"pack://application:,,,/MazeRunner;component/Images/Explorer.png"));
             Mummy.HorizontalAlignment = HorizontalAlignment.Left;
             Mummy.VerticalAlignment = VerticalAlignment.Top;
             Mummy.Height = height;

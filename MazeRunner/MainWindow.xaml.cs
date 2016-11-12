@@ -17,11 +17,13 @@ namespace MazeRunner
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
+    /// handle game's logic
     /// </summary>
     public partial class MainWindow : Window
     {
         #region Properties
         private bool GameStarted;
+        private bool ChaserTurn;
         #endregion
 
         public MainWindow()
@@ -38,13 +40,41 @@ namespace MazeRunner
         public void StartGame()
         {
             GameStarted = true;
+            ChaserTurn = false;
+        }
+
+        public void EndRunnerTurn()
+        {            
+            ChaserTurn = true;
+            Map.StartChaserTurn();
+            //MessageBox.Show("chaser turn");
+        }
+
+        public void EndChaserTurn()
+        {            
+            ChaserTurn = false;
+            //MessageBox.Show("runner turn");
+        }
+
+        public void EndStage(bool win = true)
+        {
+            if (win)
+            {
+                MessageBox.Show("You Won");
+                Map.MapLoaded = false;
+            }
+            else
+            {
+                MessageBox.Show("You lost");
+                Map.MapLoaded = false;
+            }
         }
         #endregion
 
         #region Events
         private void Window_KeyUp(object sender, KeyEventArgs e)
         {
-            if (Map.MapLoaded && !Map.isMoving)
+            if (Map.MapLoaded && !Map.isMoving && !ChaserTurn)
             {
                 if (e.Key == Key.A || e.Key == Key.Left)
                 {
@@ -82,13 +112,7 @@ namespace MazeRunner
                     Map.MoveDown();
                 }
             }
-        }
-
-        public void EndStage()
-        {
-            MessageBox.Show("You Won");
-            Map.MapLoaded = false;
-        }
+        }        
         #endregion
     }
 }
