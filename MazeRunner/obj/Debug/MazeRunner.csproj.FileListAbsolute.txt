@@ -40,5 +40,10 @@ E:\MazeRunner\MazeRunner\obj\Debug\MainWindow.baml
 E:\MazeRunner\MazeRunner\obj\Debug\MazeRunner.g.resources
 E:\MazeRunner\MazeRunner\obj\Debug\MazeRunner.Properties.Resources.resources
 E:\MazeRunner\MazeRunner\obj\Debug\MazeRunner.csproj.GenerateResource.Cache
+<<<<<<< HEAD
 C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\Controls\Chaser.g.cs
 C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\Controls\Chaser.baml
+=======
+E:\MazeRunner\MazeRunner\bin\Debug\MathNet.Numerics.dll
+E:\MazeRunner\MazeRunner\bin\Debug\MathNet.Numerics.xml
+>>>>>>> origin/master

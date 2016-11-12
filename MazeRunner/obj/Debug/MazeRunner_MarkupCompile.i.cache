@@ -12,9 +12,15 @@ DEBUG;TRACE
 C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\App.xaml
 51582677667
 
+<<<<<<< HEAD
 141027132452
 13738642453
 Controls\Chaser.xaml;Controls\GameControl.xaml;Controls\Map.xaml;Controls\Runner.xaml;MainWindow.xaml;
+=======
+13893127805
+141810141165
+Controls\GameControl.xaml;Controls\Map.xaml;Controls\Runner.xaml;MainWindow.xaml;
+>>>>>>> origin/master
 
 True
 
