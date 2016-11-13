@@ -35,10 +35,10 @@ namespace MazeRunner.Controls
         public bool isMoving;
         public struct Pos
         {
-            public int X,Y;
-            public double f,g,h;
+            public int X, Y;
+            public double f, g, h;
             public int xpre, ypre;
-            public Pos(int x, int y,double f,double g)
+            public Pos(int x, int y, double f, double g)
             {
                 this.X = x;
                 this.Y = y;
@@ -49,9 +49,9 @@ namespace MazeRunner.Controls
                 this.ypre = 0;
             }
         }
-        public  Pos Mummy,xrunner, Goal;
+        public Pos Mummy, xrunner, Goal;
 
-        private Storyboard Runner_sb = new Storyboard();
+        private Storyboard sb = new Storyboard();
         private Storyboard Chaser_sb = new Storyboard();
         #endregion
 
@@ -88,7 +88,7 @@ namespace MazeRunner.Controls
 
             runner = new Runner(i, j);
             runner.Margin = new Thickness(y + 3, x, 0, 0);
-                       
+
             gdMap.Children.Add(start);
             gdMap.Children.Add(runner);
         }
@@ -133,7 +133,7 @@ namespace MazeRunner.Controls
                     {
                         AddObstacle((i + 1) * 45, (j + 1) * 45);
                     }
-                    else if(MapMatrix[i,j] == 2)
+                    else if (MapMatrix[i, j] == 2)
                     {
                         AddRunner(i, j, (i + 1) * 45, (j + 1) * 45);
                     }
@@ -211,7 +211,7 @@ namespace MazeRunner.Controls
                     y = rnd.Next(cols);
                 } while (MapMatrix[x, y] == 1);
                 MapMatrix[x, y] = 2;
-                xrunner = new Pos(x, y,0,0);
+                xrunner = new Pos(x, y, 0, 0);
 
                 //[3]: goal
                 //random goal's post
@@ -297,29 +297,23 @@ namespace MazeRunner.Controls
         public void StartChaserTurn()
         {
             //    int move = chaser.Run(MapMatrix);
-            int move = chaser.Asmove(MapMatrix,chaser,runner);
+            int move = chaser.Asmove(MapMatrix, chaser, runner);
             StartChaserAnimation();
         }
 
         ThicknessAnimation Chaser_ta = new ThicknessAnimation();
         private void StartChaserAnimation()
         {
-            Runner_ta.Completed -= Runner_ta_Completed;            
-            //create animation
-            //ThicknessAnimation Chaser_ta = new ThicknessAnimation();
             Chaser_ta.From = chaser.Margin;
             Chaser_ta.To = new Thickness((chaser.y + 1) * 45, (chaser.x + 1) * 45, 0, 0);
             Chaser_ta.Duration = new Duration(TimeSpan.FromMilliseconds(500));
             Chaser_ta.Completed += Chaser_ta_Completed;
-            //chaser.BeginAnimation(Chaser.MarginProperty, Chaser_ta);
-
             //config storyboard
             Storyboard.SetTargetProperty(Chaser_ta, new PropertyPath(Chaser.MarginProperty));
-            Runner_sb.Children.Clear();
-            Runner_sb.Children.Add(Chaser_ta);
-
+            sb.Children.Clear();
+            sb.Children.Add(Chaser_ta);
             //begin animation
-            Runner_sb.Begin(chaser, true);
+            sb.Begin(chaser, true);
         }
         #endregion
 
@@ -327,22 +321,19 @@ namespace MazeRunner.Controls
         ThicknessAnimation Runner_ta = new ThicknessAnimation();
         private void StartRunnerAnimation()
         {
-            Chaser_ta.Completed -= Chaser_ta_Completed;
-            //create animation
-            //ThicknessAnimation Runner_ta = new ThicknessAnimation();
             Runner_ta.From = runner.Margin;
             Runner_ta.To = new Thickness((runner.y + 1) * 45 + 3, (runner.x + 1) * 45, 0, 0);
             Runner_ta.Duration = new Duration(TimeSpan.FromMilliseconds(500));
             Runner_ta.Completed += Runner_ta_Completed;
-            //runner.BeginAnimation(Runner.MarginProperty, Runner_ta);
+
             //config storyboard
             Storyboard.SetTargetProperty(Runner_ta, new PropertyPath(Runner.MarginProperty));
-            Runner_sb.Children.Clear();
-            Runner_sb.Children.Add(Runner_ta);
+            sb.Children.Clear();
+            sb.Children.Add(Runner_ta);
 
             //begin animation
             isMoving = true;
-            Runner_sb.Begin(runner, true);
+            sb.Begin(runner, true);
         }
 
         public void MoveUp()
@@ -402,16 +393,23 @@ namespace MazeRunner.Controls
         #region Events
         private void Runner_ta_Completed(object sender, EventArgs e)
         {
+            Runner_ta.Completed -= Runner_ta_Completed;
+
             isMoving = false;
-            Main.EndRunnerTurn();
-            //CheckGoal();
-            
+            if (!CheckGoal())
+            {
+                Main.EndRunnerTurn();
+            }
         }
 
         private void Chaser_ta_Completed(object sender, EventArgs e)
         {
-            Main.EndChaserTurn();
-            //CheckGoal();
+            Chaser_ta.Completed -= Chaser_ta_Completed;
+            //Chaser_sb.Stop();
+            if (!CheckGoal())
+            {
+                Main.EndChaserTurn();
+            }
         }
         #endregion
     }

@@ -49,3 +49,4 @@ E:\MazeRunner\MazeRunner\bin\Debug\MathNet.Numerics.xml
 >>>>>>> origin/master
 E:\MazeRunner\MazeRunner\obj\Debug\Controls\Chaser.g.cs
 E:\MazeRunner\MazeRunner\obj\Debug\Controls\Chaser.baml
+C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\bin\Debug\MathNet.Numerics.xml
