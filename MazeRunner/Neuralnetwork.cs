@@ -20,7 +20,7 @@ namespace MazeRunner
             1st layer have 10 Neurals
             2nd layer  have 5 neural
          */
-        NeuralNework(int inputSize,int fstLayersize , int sndLayersize,int outPutsize)
+        public NeuralNework(int inputSize,int fstLayersize , int sndLayersize,int outPutsize)
         {
             /*
              *  Create Random Weight Matrix
@@ -50,7 +50,7 @@ namespace MazeRunner
             this.input = new double[inputSize,1];
             this.output = new double[outPutsize, 1];
         }
-        void Setinput(int[,] MapMatrix)
+        public void Setinput(int[,] MapMatrix)
         {
             int i, j, k = 0;
             for (i = 0; i < 13; i++)
@@ -94,7 +94,7 @@ namespace MazeRunner
                     if (M[i, j] < 0) M[i, j] = 0;
                     else M[i, j] = 1;
         }
-        double[,] Process()
+        public double[,] Process()
         {
             double[,] resultH1;
             double[,] resultH2;
