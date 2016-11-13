@@ -19,7 +19,7 @@ namespace MazeRunner
             {
                 NeuralNework temp = new NeuralNework(13 * 13, 10, 5, 2);
                 temp.Setinput(Map);
-                temp.
+                //temp.
             }
         }
         

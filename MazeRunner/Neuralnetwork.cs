@@ -108,7 +108,7 @@ namespace MazeRunner
         }
         void exportWeightVector()
         {
-            int i, j, k;
+            int i, j;
             for (i = 0; i < 10; i++)
                 for (j = 0; j < 169; j++)
                     WeightVector.Add(weightMatrixH1[i, j]);
