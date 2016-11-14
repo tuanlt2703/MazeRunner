@@ -18,10 +18,7 @@
                 </Style>
             </TextBlock.Style>
         </TextBlock>
-        <ComboBox x:Name="cmbStages" FontSize="17" SelectedIndex="0" DropDownClosed="cmbStages_DropDownClosed" HorizontalAlignment="Left" Margin="62,10,0,0" VerticalAlignment="Top" Width="40" Height="27">
-            <ComboBoxItem FontSize="17">0</ComboBoxItem>
-            <ComboBoxItem FontSize="17">1</ComboBoxItem>
-        </ComboBox>
+        <ComboBox x:Name="cmbStages" FontSize="17" SelectedIndex="0" DropDownClosed="cmbStages_DropDownClosed" HorizontalAlignment="Left" Margin="62,10,0,0" VerticalAlignment="Top" Width="40" Height="27"/>
 
         <TextBlock Text="Score: " FontSize="17" HorizontalAlignment="Left" Margin="6,53,0,0"  VerticalAlignment="Top"/>
         <TextBox x:Name="tbScore" IsReadOnly="False" Background="Transparent" BorderThickness="0" Padding="0,2,0,0" Text="N/A"
@@ -31,14 +28,16 @@
         <TextBox x:Name="tbTime" IsReadOnly="False" Background="Transparent" Text="00:00"
                  FontSize="17" HorizontalAlignment="Left" Margin="50,102,0,0"  VerticalAlignment="Top"/>
 
-        <Button x:Name="btnStart" Click="btnStart_Click" Content="Start"   FontSize="15" HorizontalAlignment="Left" Margin="18,196,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button x:Name="btnStart" Click="btnStart_Click" Content="StartGame"   FontSize="15" HorizontalAlignment="Left" Margin="18,196,0,0" VerticalAlignment="Top" Width="75"/>
         <Button x:Name="btnRandom" Click="btnRandom_Click" Content="Random" FontSize="15" HorizontalAlignment="Left" Margin="14,150,0,0" VerticalAlignment="Top" Width="83" Height="41"/>
 
         <Button x:Name="btnUndo" IsEnabled="False" Content="&lt;&lt;" FontSize="15" HorizontalAlignment="Left" Margin="7,230,0,0" VerticalAlignment="Top" Width="45"/>
         <Button x:Name="btnNext" IsEnabled="False" Content="&gt;&gt;" FontSize="15" HorizontalAlignment="Left" Margin="57,230,0,0" VerticalAlignment="Top" Width="45"/>
 
-        <Button x:Name="btnReset" Content="Reset Maze" FontSize="15" HorizontalAlignment="Left" Margin="12,274,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnReset" IsEnabled="False" Click="btnReset_Click" Content="Reset Maze" FontSize="15" HorizontalAlignment="Left" Margin="15,272,0,0" VerticalAlignment="Top"/>
 
+        <Button x:Name="btnSave" IsEnabled="False" Click="btnSave_Click" Content="Save Maze" FontSize="15" HorizontalAlignment="Left" Margin="18,309,0,0" VerticalAlignment="Top"/>
+        
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="715" Margin="107,0,0,0" VerticalAlignment="Top" Width="3"/>
     </Grid>
 </UserControl>

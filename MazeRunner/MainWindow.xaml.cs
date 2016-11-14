@@ -23,8 +23,7 @@ namespace MazeRunner
     {
         #region Properties
         private bool GameStarted;
-        private bool ChaserTurn;
-        
+        private bool ChaserTurn;        
         #endregion
 
         public MainWindow()
@@ -42,6 +41,13 @@ namespace MazeRunner
         {
             GameStarted = true;
             ChaserTurn = false;
+
+            Control.StartGame();
+        }
+
+        public void UserSelectOtherStage()
+        {
+            GameStarted = false;
         }
 
         public void EndRunnerTurn()
@@ -63,11 +69,13 @@ namespace MazeRunner
             {
                 MessageBox.Show("You Won");
                 Map.MapLoaded = false;
+                Control.EndGame();
             }
             else
             {
                 MessageBox.Show("You lost");
                 Map.MapLoaded = false;
+                Control.EndGame();
             }
         }
         #endregion

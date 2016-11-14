@@ -17,6 +17,12 @@ using System.Windows.Media.Animation;
 
 namespace MazeRunner.Controls
 {
+    public struct CharacterPos
+    {
+        public int RunnerX, RunnerY;
+        public int ChaserX, ChaserY;
+    }
+
     /// <summary>
     /// Interaction logic for Map.xaml
     /// </summary>
@@ -33,6 +39,9 @@ namespace MazeRunner.Controls
         private Chaser chaser;
         public bool MapLoaded;
         public bool isMoving;
+        public List<CharacterPos> Moves;
+        private CharacterPos Last;
+
         public struct Pos
         {
             public int X, Y;
@@ -51,8 +60,8 @@ namespace MazeRunner.Controls
         }
         public Pos Mummy, xrunner, Goal;
 
+        //animate
         private Storyboard sb = new Storyboard();
-        private Storyboard Chaser_sb = new Storyboard();
         #endregion
 
         public Map()
@@ -60,9 +69,11 @@ namespace MazeRunner.Controls
             InitializeComponent();
 
             this.Background = Map10x10;
+            this.Moves = new List<CharacterPos>(3);
         }
 
         #region Methods
+        #region Maps
         private void AddObstacle(double x, double y)
         {
             var aBrick = new Image();
@@ -91,7 +102,7 @@ namespace MazeRunner.Controls
 
             gdMap.Children.Add(start);
             gdMap.Children.Add(runner);
-        }
+        }        
 
         private void AddGoal(double x, double y)
         {
@@ -156,93 +167,98 @@ namespace MazeRunner.Controls
             Grid.SetZIndex(chaser, maxZ + 1);
         }
 
-        private void CreateRandomMap(int level = 0, int rows = 13, int cols = 13)
+        public void SaveStage(int level)
         {
             using (var writer = new StreamWriter(@"Maps\Stage " + level.ToString() + ".txt", false))
             {
-                Random rnd = new Random(System.DateTime.Now.Millisecond);
-                MapMatrix = new int[rows, cols];
-                for (int i = 0; i < rows; i++)
-                {
-                    for (int j = 0; j < cols; j++)
-                    {
-                        MapMatrix[i, j] = -1;
-                    }
-                }
-
-                //random the maze            
-                int x, y, CellCount = 0, ObstCount = 0;
-                #region random a maze
-                do
-                {
-                    do //find a note/cell that hadn't been initialized
-                    {
-                        x = rnd.Next(rows);
-                        y = rnd.Next(cols);
-                    } while (MapMatrix[x, y] != -1);
-
-                    int tmp = rnd.Next(2); //[1]: obstacle - [0]: movable
-                    if (tmp != 1)
-                    {
-                        MapMatrix[x, y] = tmp;
-                    }
-                    else
-                    {
-                        if (ObstCount <= MaxNumberOfObstacles)
-                        {
-                            MapMatrix[x, y] = tmp;
-                            ObstCount++;
-                        }
-                        else //MaxNumberOfObstacles reached
-                        {
-                            MapMatrix[x, y] = 0;
-                        }
-                    }
-                    CellCount++;
-                } while (CellCount < rows * cols);
-                #endregion
-
-                #region random starting, goal, chaser point
-                //[2]: runner
-                //random runner's starting post
-                do
-                {
-                    x = rnd.Next(rows);
-                    y = rnd.Next(cols);
-                } while (MapMatrix[x, y] == 1);
-                MapMatrix[x, y] = 2;
-                xrunner = new Pos(x, y, 0, 0);
-
-                //[3]: goal
-                //random goal's post
-                do
-                {
-                    x = rnd.Next(rows);
-                    y = rnd.Next(cols);
-                } while (MapMatrix[x, y] == 1 || MapMatrix[x, y] == 2);
-                MapMatrix[x, y] = 3;
-                Goal = new Pos(x, y, 0, 0);
-                //[4]: Mummy
-                //random chaser's starting post
-                do
-                {
-                    x = rnd.Next(rows);
-                    y = rnd.Next(cols);
-                } while (MapMatrix[x, y] == 1 || MapMatrix[x, y] == 2 || MapMatrix[x, y] == 3);
-                MapMatrix[x, y] = 4;
-                Mummy = new Pos(x, y, 0, 0);
-                #endregion
-
                 //write to text file
-                for (int i = 0; i < rows; i++)
+                for (int i = 0; i < MapMatrix.GetLength(0); i++)
                 {
-                    for (int j = 0; j < cols; j++)
+                    for (int j = 0; j < MapMatrix.GetLength(1); j++)
                     {
                         writer.Write(MapMatrix[i, j].ToString() + " ");
                     }
                     writer.WriteLine();
                 }
             }
+        }
+
+        private void CreateRandomMap(int level = 0, int rows = 13, int cols = 13)
+        {
+            Random rnd = new Random(System.DateTime.Now.Millisecond);
+            MapMatrix = new int[rows, cols];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    MapMatrix[i, j] = -1;
+                }
+            }
+
+            //random the maze            
+            int x, y, CellCount = 0, ObstCount = 0;
+            #region random a maze
+            do
+            {
+                do //find a note/cell that hadn't been initialized
+                {
+                    x = rnd.Next(rows);
+                    y = rnd.Next(cols);
+                } while (MapMatrix[x, y] != -1);
+
+                int tmp = rnd.Next(2); //[1]: obstacle - [0]: movable
+                if (tmp != 1)
+                {
+                    MapMatrix[x, y] = tmp;
+                }
+                else
+                {
+                    if (ObstCount <= MaxNumberOfObstacles)
+                    {
+                        MapMatrix[x, y] = tmp;
+                        ObstCount++;
+                    }
+                    else //MaxNumberOfObstacles reached
+                    {
+                        MapMatrix[x, y] = 0;
+                    }
+                }
+                CellCount++;
+            } while (CellCount < rows * cols);
+            #endregion
+
+            #region random starting, goal, chaser point
+            //[2]: runner
+            //random runner's starting post
+            do
+            {
+                x = rnd.Next(rows);
+                y = rnd.Next(cols);
+            } while (MapMatrix[x, y] == 1);
+            MapMatrix[x, y] = 2;
+            xrunner = new Pos(x, y, 0, 0);
+
+            //[3]: goal
+            //random goal's post
+            do
+            {
+                x = rnd.Next(rows);
+                y = rnd.Next(cols);
+            } while (MapMatrix[x, y] == 1 || MapMatrix[x, y] == 2);
+            MapMatrix[x, y] = 3;
+            Goal = new Pos(x, y, 0, 0);
+            //[4]: Mummy
+            //random chaser's starting post
+            do
+            {
+                x = rnd.Next(rows);
+                y = rnd.Next(cols);
+            } while (MapMatrix[x, y] == 1 || MapMatrix[x, y] == 2 || MapMatrix[x, y] == 3);
+            MapMatrix[x, y] = 4;
+            Mummy = new Pos(x, y, 0, 0);
+            #endregion
+            
+            SaveStage(level);
         }
 
         public void LoadRandomMap(int level = 0)
@@ -277,6 +293,7 @@ namespace MazeRunner.Controls
             DrawMap();
             MapLoaded = true;
         }
+        #endregion
 
         public bool CheckGoal()
         {
@@ -296,7 +313,11 @@ namespace MazeRunner.Controls
         #region Chaser's Movement
         public void StartChaserTurn()
         {
-            //    int move = chaser.Run(MapMatrix);
+            //save last chaser pos
+            //initializing Last is avoidable, for its earlier's success
+            Last.ChaserX = chaser.x;
+            Last.ChaserY = chaser.y;
+
             int move = chaser.Asmove(MapMatrix, chaser, runner);
             StartChaserAnimation();
         }
@@ -342,6 +363,11 @@ namespace MazeRunner.Controls
             {
                 if (MapMatrix[runner.x + -1, runner.y] != 1)
                 {
+                    //save runner last pos
+                    Last = new CharacterPos();
+                    Last.RunnerX = runner.x;
+                    Last.RunnerY = runner.y;
+
                     runner.x -= 1;
 
                     StartRunnerAnimation();
@@ -355,6 +381,11 @@ namespace MazeRunner.Controls
             {
                 if (MapMatrix[runner.x + 1, runner.y] != 1)
                 {
+                    //save runner last pos
+                    Last = new CharacterPos();
+                    Last.RunnerX = runner.x;
+                    Last.RunnerY = runner.y;
+
                     runner.x += 1;
 
                     StartRunnerAnimation();
@@ -368,6 +399,11 @@ namespace MazeRunner.Controls
             {
                 if (MapMatrix[runner.x, runner.y - 1] != 1)
                 {
+                    //save runner last pos
+                    Last = new CharacterPos();
+                    Last.RunnerX = runner.x;
+                    Last.RunnerY = runner.y;
+
                     runner.y -= 1;
 
                     StartRunnerAnimation();
@@ -381,6 +417,11 @@ namespace MazeRunner.Controls
             {
                 if (MapMatrix[runner.x, runner.y + 1] != 1)
                 {
+                    //save runner last pos
+                    Last = new CharacterPos();
+                    Last.RunnerX = runner.x;
+                    Last.RunnerY = runner.y;
+
                     runner.y += 1;
 
                     StartRunnerAnimation();
@@ -409,6 +450,18 @@ namespace MazeRunner.Controls
             if (!CheckGoal())
             {
                 Main.EndChaserTurn();
+            }
+
+            //store last movement into list
+            //undo 3 times only
+            if (Moves.Count <= 3) 
+            {
+                Moves.Add(Last);
+            }
+            else
+            {
+                Moves.RemoveAt(0);
+                Moves.Add(Last);
             }
         }
         #endregion
