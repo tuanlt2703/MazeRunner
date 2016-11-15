@@ -39,8 +39,11 @@ namespace MazeRunner.Controls
         private Chaser chaser;
         public bool MapLoaded;
         public bool isMoving;
-        public List<CharacterPos> Moves;
+        
+        public List<CharacterPos> LastMoves;
+        public int PreviousMoveID;
         private CharacterPos Last;
+        private bool isUndo;
 
         public struct Pos
         {
@@ -69,7 +72,7 @@ namespace MazeRunner.Controls
             InitializeComponent();
 
             this.Background = Map10x10;
-            this.Moves = new List<CharacterPos>(3);
+            this.LastMoves = new List<CharacterPos>(3);
         }
 
         #region Methods
@@ -135,6 +138,12 @@ namespace MazeRunner.Controls
 
         private void DrawMap()
         {
+            //reset
+            LastMoves.Clear();
+            isUndo = false;
+            PreviousMoveID = -1;
+
+            //draw map
             gdMap.Children.Clear();
             for (int i = 0; i < MapMatrix.GetLength(0); i++)
             {
@@ -310,6 +319,42 @@ namespace MazeRunner.Controls
             return false;
         }
 
+        public void Undo()
+        {
+            Storyboard sb_tmp = new Storyboard();
+            //undo runner movement
+            runner.x = LastMoves[PreviousMoveID].RunnerX;
+            runner.y = LastMoves[PreviousMoveID].RunnerY;
+            //runner.Margin = new Thickness((runner.y + 1) * 45 + 3, (runner.x + 1) * 45, 0, 0);
+            ////animate
+            ThicknessAnimation r_ta = new ThicknessAnimation(runner.Margin,
+                new Thickness((runner.y + 1) * 45 + 3, (runner.x + 1) * 45, 0, 0), TimeSpan.FromMilliseconds(100));
+            Storyboard.SetTargetProperty(r_ta, new PropertyPath(Runner.MarginProperty));
+            sb_tmp.Children.Add(r_ta);
+            sb_tmp.Begin(runner, true);
+
+            //undo chaser movement
+            chaser.x = LastMoves[PreviousMoveID].ChaserX;
+            chaser.y = LastMoves[PreviousMoveID].ChaserY;
+            //chaser.Margin = new Thickness((chaser.y + 1) * 45, (chaser.x + 1) * 45, 0, 0);
+            ThicknessAnimation c_ta = new ThicknessAnimation(chaser.Margin,
+                new Thickness((chaser.y + 1) * 45, (chaser.x + 1) * 45, 0, 0), TimeSpan.FromMilliseconds(100));
+            Storyboard.SetTargetProperty(c_ta, new PropertyPath(Chaser.MarginProperty));
+            sb_tmp.Children.Add(c_ta);
+            sb_tmp.Begin(chaser, true);
+
+
+            //mark current move
+            isUndo = true;
+            PreviousMoveID--;
+            //Main.Control.btnNext.IsEnabled = true;
+        }
+
+        public void Next()
+        {
+
+        }
+
         #region Chaser's Movement
         public void StartChaserTurn()
         {
@@ -453,16 +498,43 @@ namespace MazeRunner.Controls
             }
 
             //store last movement into list
-            //undo 3 times only
-            if (Moves.Count <= 3) 
+            if (!isUndo) //completely new movement
             {
-                Moves.Add(Last);
+                //undo 3 times only
+                if (LastMoves.Count < 3)
+                {
+                    LastMoves.Add(Last);
+                }
+                else
+                {
+                    LastMoves.RemoveAt(0);
+                    LastMoves.Add(Last);
+                }
+                PreviousMoveID = LastMoves.Count - 1;
             }
-            else
+            else //new movement after undo
             {
-                Moves.RemoveAt(0);
-                Moves.Add(Last);
+                //remove stored movement
+                //calculate number of moves to remove
+                int count;
+                if (PreviousMoveID < 0)
+                {
+                    count = 1;
+                }
+                else
+                {
+                    count = LastMoves.Count - PreviousMoveID - 1;
+                }
+                LastMoves.RemoveRange(PreviousMoveID + 1, count);
+
+                //re-store last move
+                LastMoves.Add(Last);
+                PreviousMoveID = LastMoves.Count - 1;
+
+                //enable btnNext
+                Main.Control.btnNext.IsEnabled = false;
             }
+            Main.Control.btnUndo.IsEnabled = true;           
         }
         #endregion
     }

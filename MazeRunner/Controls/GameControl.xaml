@@ -31,13 +31,18 @@
         <Button x:Name="btnStart" Click="btnStart_Click" Content="StartGame"   FontSize="15" HorizontalAlignment="Left" Margin="18,196,0,0" VerticalAlignment="Top" Width="75"/>
         <Button x:Name="btnRandom" Click="btnRandom_Click" Content="Random" FontSize="15" HorizontalAlignment="Left" Margin="14,150,0,0" VerticalAlignment="Top" Width="83" Height="41"/>
 
-        <Button x:Name="btnUndo" IsEnabled="False" Content="&lt;&lt;" FontSize="15" HorizontalAlignment="Left" Margin="7,230,0,0" VerticalAlignment="Top" Width="45"/>
-        <Button x:Name="btnNext" IsEnabled="False" Content="&gt;&gt;" FontSize="15" HorizontalAlignment="Left" Margin="57,230,0,0" VerticalAlignment="Top" Width="45"/>
+        <Button x:Name="btnUndo" Click="btnUndo_Click" IsEnabled="False" Content="&lt;&lt;" FontSize="15" HorizontalAlignment="Left" Margin="7,230,0,0" VerticalAlignment="Top" Width="45"/>
+        <Button x:Name="btnNext" Click="btnNext_Click" IsEnabled="False" Content="&gt;&gt;" FontSize="15" HorizontalAlignment="Left" Margin="57,230,0,0" VerticalAlignment="Top" Width="45"/>
 
         <Button x:Name="btnReset" IsEnabled="False" Click="btnReset_Click" Content="Reset Maze" FontSize="15" HorizontalAlignment="Left" Margin="15,272,0,0" VerticalAlignment="Top"/>
 
         <Button x:Name="btnSave" IsEnabled="False" Click="btnSave_Click" Content="Save Maze" FontSize="15" HorizontalAlignment="Left" Margin="18,309,0,0" VerticalAlignment="Top"/>
         
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="715" Margin="107,0,0,0" VerticalAlignment="Top" Width="3"/>
+
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="4" Margin="0,350,0,0" VerticalAlignment="Top" Width="108"/>
+        
+        <Button x:Name="btnTrain" IsEnabled="False" Content="Start Training" FontSize="15" HorizontalAlignment="Left" Margin="8,371,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnStartBot" IsEnabled="False" Content="N-E Start" FontSize="15" HorizontalAlignment="Left" Margin="23,405,0,0" VerticalAlignment="Top"/>
     </Grid>
 </UserControl>

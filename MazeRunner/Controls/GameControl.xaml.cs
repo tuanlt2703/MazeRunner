@@ -25,6 +25,7 @@ namespace MazeRunner.Controls
         public MainWindow Main;
         private DispatcherTimer Timer;
         private DateTime TimerStart;
+        private int CurrentStageID = -1;
 
         public GameControl()
         {
@@ -76,8 +77,14 @@ namespace MazeRunner.Controls
         private void btnRandom_Click(object sender, RoutedEventArgs e)
         {
             Main.Map.LoadRandomMap();
-
+            Main.UserSelectOtherStage();
+            Timer.Stop();
+            tbTime.Text = "00:00";
+            cmbStages.SelectedIndex = 0;
             btnSave.IsEnabled = true;
+
+            btnUndo.IsEnabled = false;
+            btnNext.IsEnabled = false;
         }
 
         private void btnSave_Click(object sender, RoutedEventArgs e)
@@ -93,15 +100,49 @@ namespace MazeRunner.Controls
 
         private void cmbStages_DropDownClosed(object sender, EventArgs e)
         {
-            Main.Map.Load(cmbStages.SelectedIndex);
-            Main.UserSelectOtherStage();
-            Timer.Stop();
-            tbTime.Text = "00:00";
+            if (CurrentStageID != cmbStages.SelectedIndex)
+            {
+                Main.Map.Load(cmbStages.SelectedIndex);
+                Main.UserSelectOtherStage();
+                Timer.Stop();
+                tbTime.Text = "00:00";
+
+                CurrentStageID = cmbStages.SelectedIndex;
+                btnUndo.IsEnabled = false;
+                btnNext.IsEnabled = false;
+
+                if (CurrentStageID > 0)
+                {
+                    btnTrain.IsEnabled = true;
+                }
+            }
         }
 
         private void btnReset_Click(object sender, RoutedEventArgs e)
         {
             Main.Map.Load(cmbStages.SelectedIndex);
+            btnUndo.IsEnabled = false;
+            btnNext.IsEnabled = false;
+        }
+
+        private void btnUndo_Click(object sender, RoutedEventArgs e)
+        {
+            Main.Map.Undo();
+
+            if (Main.Map.PreviousMoveID < 0)
+            {
+                btnUndo.IsEnabled = false;
+            }
+        }
+
+        private void btnNext_Click(object sender, RoutedEventArgs e)
+        {
+            Main.Map.Next();
+
+            if(Main.Map.PreviousMoveID > Main.Map.LastMoves.Count)
+            {
+                btnNext.IsEnabled = false;
+            }
         }
         #endregion        
     }
