@@ -22,3 +22,6 @@ C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\MazeRu
 C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\MazeRunner.exe
 C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\MazeRunner.pdb
 C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\MazeRunner.csprojResolveAssemblyReference.cache
+E:\abvc\MazeRunner\MazeRunner\bin\Debug\MazeRunner.exe.config
+E:\abvc\MazeRunner\MazeRunner\obj\Debug\MazeRunner.exe
+E:\abvc\MazeRunner\MazeRunner\obj\Debug\MazeRunner.pdb
