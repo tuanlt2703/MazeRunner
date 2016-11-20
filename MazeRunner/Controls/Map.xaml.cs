@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Media.Animation;
+using MazeRunner.GA;
 
 namespace MazeRunner.Controls
 {
@@ -34,12 +35,12 @@ namespace MazeRunner.Controls
         private readonly int MaxNumberOfObstacles = 40;
 
         public MainWindow Main;
-        private int[,] MapMatrix;
+        public int[,] MapMatrix;
         private Runner runner;
         private Chaser chaser;
         public bool MapLoaded;
         public bool isMoving;
-        
+
         public List<CharacterPos> LastMoves;
         public int PreviousMoveID;
         private CharacterPos Last;
@@ -105,7 +106,7 @@ namespace MazeRunner.Controls
 
             gdMap.Children.Add(start);
             gdMap.Children.Add(runner);
-        }        
+        }
 
         private void AddGoal(double x, double y)
         {
@@ -266,7 +267,7 @@ namespace MazeRunner.Controls
             MapMatrix[x, y] = 4;
             Mummy = new Pos(x, y, 0, 0);
             #endregion
-            
+
             SaveStage(level);
         }
 
@@ -534,8 +535,10 @@ namespace MazeRunner.Controls
                 //enable btnNext
                 Main.Control.btnNext.IsEnabled = false;
             }
-            Main.Control.btnUndo.IsEnabled = true;           
+            Main.Control.btnUndo.IsEnabled = true;
         }
         #endregion
+      
     }
 }
+      

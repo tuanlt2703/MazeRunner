@@ -10,5 +10,6 @@
     <Grid>
         <Controls:GameControl x:Name="Control" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         <Controls:Map x:Name="Map" HorizontalAlignment="Left" Margin="111,1,0,0" VerticalAlignment="Top" />
+        
     </Grid>
 </Window>

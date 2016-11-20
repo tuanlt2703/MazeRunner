@@ -94,16 +94,16 @@ namespace MazeRunner.Controls
             return move;
         }
         #region A*
-        double h(ref Map.Pos k, Map.Pos m)
+        static double h(ref Map.Pos k, Map.Pos m)
         {
             return Math.Max(Math.Abs(k.X - m.X), Math.Abs(k.Y - m.Y));
         }
-        public List<Map.Pos> runAstar(int[,] MapMatrix, Map.Pos Mummy, Map.Pos Runner)
+        public static List<Map.Pos> runAstar(int[,] emuMap,Map.Pos emuChaser,Map.Pos emuRunner)
         {
-
             int i, j, next = 0, r, n, m, dem1, dem2, co = -1, cc = -1, ci;//co mean checkopen cc mean checkclose
-            int xstart = Mummy.X, ystart = Mummy.Y;
-            int xgoal = Runner.X, ygoal = Runner.Y;
+            
+            int xstart = emuChaser.X, ystart = emuChaser.Y;
+            int xgoal = emuRunner.X, ygoal = emuRunner.Y;
             m = 13;
             n = 13;
             bool found = false;
@@ -131,13 +131,13 @@ namespace MazeRunner.Controls
                     j = open[next].Y + dy[r];
 
                     if (i >= 0 && j >= 0 && i < n && j < m)
-                        if (MapMatrix[i, j] == 0 || MapMatrix[i, j] == 2)
+                        if (emuMap[i, j] == 0 || emuMap[i, j] == 2)
                         {
                             for (dem1 = 0; dem1 < open.Count; dem1++) if (open[dem1].X == i && open[dem1].Y == j) co = dem1;// check pos x in list open
                             for (dem2 = 0; dem2 < close.Count; dem2++) if (close[dem2].X == i && close[dem2].Y == j) cc = dem2;// check pos y in close;
                             temp.X = i;
                             temp.Y = j;
-                            h(ref temp, Runner);
+                            h(ref temp, emuRunner);
                             if (co != -1)
                             {
                                 if (open[co].f > temp.f + open[next].g + 1)
@@ -222,8 +222,8 @@ namespace MazeRunner.Controls
             temp2.X = Mummy.x;
             temp2.Y = Mummy.y;
             int move = 1, i;
-            bool found = false;
-            List<Map.Pos> Path = runAstar(MapMatrix, temp2, temp);
+            int t1, t2;
+            List<Map.Pos> Path = runAstar(MapMatrix,temp2,temp);
             if (Path != null)
             {
                 int xt, yt;
@@ -231,6 +231,7 @@ namespace MazeRunner.Controls
                 yt = Path[Path.Count - 1].Y;
                 Path.RemoveAt(Path.Count - 1);
                 //[0] = up, [1] = down, [2] = left, [3] = right
+
                 this.x = xt;
                 this.y = yt;
                 if (xt == 0 && yt == 1) return 3;
@@ -240,6 +241,25 @@ namespace MazeRunner.Controls
                 return move;
             }
             else return Run(MapMatrix);
+
+        }
+        public static List<int> Asmove2(Map.Pos Mummy, Map.Pos Runner, int[,] MapMatrix)
+        {
+            List<int> kq = new List<int>();
+            List<Map.Pos> Path = runAstar(MapMatrix,Mummy,Runner);
+            int move = 0;
+            if (Path != null)
+            {
+                int xt, yt;
+                xt = Path[Path.Count - 1].X;
+                yt = Path[Path.Count - 1].Y;
+                Path.RemoveAt(Path.Count - 1);
+                kq.Add(xt);
+                kq.Add(yt);
+                return kq;
+            }
+            else return null;
+
 
         }
     }
