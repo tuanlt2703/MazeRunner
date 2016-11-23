@@ -53,6 +53,12 @@ namespace MazeRunner
         public NeuralNework(List<double>WvI,int[,] MapMatrix) // When you already have a Weight vector and want tocreate a new neural network , import it hear
         {
             int i=0, j, k = 0,m1,n1,m2,n2,mo,no;
+            this.input = new double[1, 13 * 13];
+            this.output = new double[2, 1];
+            this.weightMatrixH1 = new double[169, 10];
+            this.weightMatrixH2 = new double[10, 5];
+            this.weightMatrixOutput = new double[5, 2];
+
             for (i = 0; i < 13; i++)
                 for (j = 0; j < 13; j++)
                 {

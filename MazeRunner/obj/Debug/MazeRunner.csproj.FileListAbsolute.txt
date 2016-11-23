@@ -22,6 +22,7 @@ C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\MazeRu
 C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\MazeRunner.exe
 C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\MazeRunner.pdb
 C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\MazeRunner.csprojResolveAssemblyReference.cache
+<<<<<<< HEAD
 E:\Mazerunner2\MazeRunner\MazeRunner\bin\Debug\MazeRunner.exe.config
 E:\Mazerunner2\MazeRunner\MazeRunner\obj\Debug\MazeRunner.exe
 E:\Mazerunner2\MazeRunner\MazeRunner\obj\Debug\MazeRunner.pdb
@@ -46,3 +47,8 @@ E:\Mazerunner2\MazeRunner\MazeRunner\obj\Debug\MainWindow.baml
 E:\Mazerunner2\MazeRunner\MazeRunner\obj\Debug\MazeRunner.g.resources
 E:\Mazerunner2\MazeRunner\MazeRunner\obj\Debug\MazeRunner.Properties.Resources.resources
 E:\Mazerunner2\MazeRunner\MazeRunner\obj\Debug\MazeRunner.csproj.GenerateResource.Cache
+=======
+E:\abvc\MazeRunner\MazeRunner\bin\Debug\MazeRunner.exe.config
+E:\abvc\MazeRunner\MazeRunner\obj\Debug\MazeRunner.exe
+E:\abvc\MazeRunner\MazeRunner\obj\Debug\MazeRunner.pdb
+>>>>>>> 6c9af5d061a1ce6d53a42eb13672a448f1bf735b

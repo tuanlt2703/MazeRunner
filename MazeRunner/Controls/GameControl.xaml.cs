@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-
+using MazeRunner;
 namespace MazeRunner.Controls
 {
     /// <summary>
@@ -26,7 +26,7 @@ namespace MazeRunner.Controls
         private DispatcherTimer Timer;
         private DateTime TimerStart;
         private int CurrentStageID = -1;
-
+        private MazeRunner.Evoluion ga;
         public GameControl()
         {
             InitializeComponent();
@@ -144,6 +144,14 @@ namespace MazeRunner.Controls
                 btnNext.IsEnabled = false;
             }
         }
-        #endregion        
+        #endregion
+
+        private void btnTrain_Click(object sender, RoutedEventArgs e)
+        {
+            ga = new Evoluion();
+            this.ga.Mainflow(10, Main.Map.MapMatrix, 100);
+            double x = this.ga.Best.fitness;
+            MessageBox.Show(x.ToString()+" ........................... ");
+        }
     }
 }

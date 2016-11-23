@@ -98,12 +98,28 @@ namespace MazeRunner.Controls
         {
             return Math.Max(Math.Abs(k.X - m.X), Math.Abs(k.Y - m.Y));
         }
-        public static List<Map.Pos> runAstar(int[,] emuMap,Map.Pos emuChaser,Map.Pos emuRunner)
+        public static List<Map.Pos> runAstar(int[,] emuMap)
         {
             int i, j, next = 0, r, n, m, dem1, dem2, co = -1, cc = -1, ci;//co mean checkopen cc mean checkclose
-            
-            int xstart = emuChaser.X, ystart = emuChaser.Y;
-            int xgoal = emuRunner.X, ygoal = emuRunner.Y;
+            int xstart=0, ystart=0;
+            Map.Pos emuRunner= new Map.Pos();
+            int xgoal=0, ygoal=0;
+            for (i = 0; i < 13; i++)
+                for (j = 0; j < 13; j++)
+                {
+                    if (emuMap[i, j] == 4) //2 runner 4 chaser;
+                    {
+                        xstart = i;
+                        ystart = j;
+                    }
+                    if(emuMap[i,j]==2)
+                    {
+                        xgoal = i;
+                        ygoal = j;
+                    }
+                };
+            emuRunner.X = xgoal;
+            emuRunner.Y = ygoal;
             m = 13;
             n = 13;
             bool found = false;
@@ -212,18 +228,11 @@ namespace MazeRunner.Controls
         {
             kq = Math.Sqrt((oct2.X - x) * (oct2.X - x) + (oct2.Y - y) * (oct2.X - y));
         }
-        public int Asmove(int[,] MapMatrix, Chaser Mummy, Runner runner)
+        public int Asmove(int[,] MapMatrix)
         {
-
-            Map.Pos temp = new Map.Pos();
-            temp.X = runner.x;
-            temp.Y = runner.y;
-            Map.Pos temp2 = new Map.Pos();
-            temp2.X = Mummy.x;
-            temp2.Y = Mummy.y;
             int move = 1, i;
             int t1, t2;
-            List<Map.Pos> Path = runAstar(MapMatrix,temp2,temp);
+            List<Map.Pos> Path = runAstar(MapMatrix);
             if (Path != null)
             {
                 int xt, yt;
@@ -243,12 +252,12 @@ namespace MazeRunner.Controls
             else return Run(MapMatrix);
 
         }
-        public static List<int> Asmove2(Map.Pos Mummy, Map.Pos Runner, int[,] MapMatrix)
+        public static List<int> Asmove2( int[,] MapMatrix)
         {
             List<int> kq = new List<int>();
-            List<Map.Pos> Path = runAstar(MapMatrix,Mummy,Runner);
+            List<Map.Pos> Path = runAstar(MapMatrix);
             int move = 0;
-            if (Path != null)
+            if (Path != null&& Path.Count!=0)
             {
                 int xt, yt;
                 xt = Path[Path.Count - 1].X;

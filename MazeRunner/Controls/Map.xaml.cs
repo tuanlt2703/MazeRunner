@@ -363,8 +363,9 @@ namespace MazeRunner.Controls
             //initializing Last is avoidable, for its earlier's success
             Last.ChaserX = chaser.x;
             Last.ChaserY = chaser.y;
-
-            int move = chaser.Asmove(MapMatrix, chaser, runner);
+            MapMatrix[Last.RunnerX, Last.RunnerY] = 0;
+            MapMatrix[runner.x, runner.y] = 2;
+            int move = chaser.Asmove(MapMatrix); // Map didn't have latest pos of chaser;
             StartChaserAnimation();
         }
 

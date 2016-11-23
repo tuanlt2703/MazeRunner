@@ -24,6 +24,18 @@ namespace MazeRunner.GA
             Genes.exportWeightVector();
             weightVector = Genes.WeightVector;
         }
+        public void set(int[,] Maze, List<double> Wvl)
+        {
+            Genes.Setinput(Maze);
+            Genes = new NeuralNework(Wvl, Maze);
+        }
+        public bool Check()
+        {
+            if (this.weightVector == null ||this.Genes==null
+                ) return false;
+            return true;
+        }
+
         #region fitnescal
         public void CFC(int[,]emuMap)
         {
@@ -91,7 +103,7 @@ namespace MazeRunner.GA
                 // Chaser turn
                 List<int> temp = new List<int>();
                 //temp =  Chaser.Asmove2(emuChaser, emuRunner, emuMap);
-                temp = Chaser.Asmove2(emuChaser, emuRunner, emuMap);
+                temp = Chaser.Asmove2(emuMap);
                 if (temp != null)
                 {
                     emuMap[emuChaser.X, emuChaser.Y] = 0;
@@ -103,7 +115,7 @@ namespace MazeRunner.GA
                 if (time.TotalMinutes > 3) { break; };
                 if (emuRunner.X == emuChaser.X && emuRunner.Y == emuChaser.Y) { lose = true; break; };
                 if (emuRunner.X == Goal.X && emuRunner.Y == Goal.Y) { win = true; break; };
-               
+               if(time.TotalSeconds>10) { this.fitness = 0; return; }
             }
             double kq = (180-time.TotalSeconds);
             double hs= new double();
