@@ -17,6 +17,31 @@ using System.Windows.Threading;
 using MazeRunner;
 namespace MazeRunner.Controls
 {
+    public struct Difficultity
+    {
+        public int Rows, Cols;
+        public string Size { get; set; }
+        double MaxObs;
+        public int NumberOfObsstacles
+        {
+            get
+            {
+                return (int)((Rows * Cols) * MaxObs);
+            }
+        }
+
+        public static Difficultity Easy = new Difficultity()
+        { Rows = 6, Cols = 6, MaxObs = 0.15, Size = "Easy 6x6" };
+
+        public static Difficultity Normal = new Difficultity()
+        { Rows = 8, Cols = 8, MaxObs = 0.2, Size = "Normal 8x8" };
+
+        public static Difficultity Hard = new Difficultity()
+        { Rows = 10, Cols = 10, MaxObs = 0.25, Size = "Hard 10x10" };
+
+        public static Difficultity Insane = new Difficultity()
+        { Rows = 13, Cols = 13, MaxObs = 0.3, Size = "Insane 13x13" };
+    }
     /// <summary>
     /// Interaction logic for GameControl.xaml
     /// </summary>
@@ -26,7 +51,7 @@ namespace MazeRunner.Controls
         private DispatcherTimer Timer;
         private DateTime TimerStart;
         private int CurrentStageID = -1;
-        private MazeRunner.Evoluion ga;
+        private List<Difficultity> MapSize;
         public GameControl()
         {
             InitializeComponent();
@@ -36,6 +61,7 @@ namespace MazeRunner.Controls
             Timer.Tick += Timer_Tick;
 
             LoadStageList();
+            LoadMaSizepList();
         }        
 
         #region Methods
@@ -46,6 +72,19 @@ namespace MazeRunner.Controls
             {
                 cmbStages.Items.Add(i);
             }
+        }
+
+        private void LoadMaSizepList()
+        {
+            MapSize = new List<Difficultity>();
+            MapSize.Add(Difficultity.Easy);
+            MapSize.Add(Difficultity.Normal);
+            MapSize.Add(Difficultity.Hard);
+            MapSize.Add(Difficultity.Insane);
+
+            cmbSize.ItemsSource = MapSize;
+            cmbSize.DisplayMemberPath = "Size";
+            cmbSize.SelectedIndex = 0;
         }
 
         public void StartGame()
@@ -69,29 +108,32 @@ namespace MazeRunner.Controls
             tbTime.Text = totalSeconds.ToString(@"mm\:ss");
         }
 
-        private void btnStart_Click(object sender, RoutedEventArgs e)
-        {
-            Main.StartGame();
-        }
-
         private void btnRandom_Click(object sender, RoutedEventArgs e)
         {
-            Main.Map.LoadRandomMap();
-            Main.UserSelectOtherStage();
-            Timer.Stop();
-            tbTime.Text = "00:00";
-            cmbStages.SelectedIndex = 0;
-            btnSave.IsEnabled = true;
+            if (cmbSize.SelectedIndex >= 0)
+            {
+                var SelectedMap = (Difficultity)cmbSize.SelectedItem;
+                Main.Map.LoadRandomMap(SelectedMap.Rows, SelectedMap.Cols, SelectedMap.NumberOfObsstacles);
+                Main.UserSelectOtherStage();
+                Timer.Stop();
+                tbTime.Text = "00:00";
+                cmbStages.SelectedIndex = 0;
+                btnSave.IsEnabled = true;
 
-            btnUndo.IsEnabled = false;
-            btnNext.IsEnabled = false;
+                btnUndo.IsEnabled = false;
+                btnNext.IsEnabled = false;
+            }
+            else
+            {
+                MessageBox.Show("Map size can't be emtype", "Error");
+            }
         }
 
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
             if(MessageBox.Show("Do you want to save this maze as stage " + cmbStages.Items.Count.ToString(),"Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
-                Main.Map.SaveStage(cmbStages.Items.Count);
+                Main.Map.SaveMap(cmbStages.Items.Count);
                 cmbStages.SelectedIndex = cmbStages.Items.Count;
                 cmbStages.Items.Add(cmbStages.Items.Count);
                 btnSave.IsEnabled = false;
@@ -102,10 +144,13 @@ namespace MazeRunner.Controls
         {
             if (CurrentStageID != cmbStages.SelectedIndex)
             {
-                Main.Map.Load(cmbStages.SelectedIndex);
+                var tmp = Main.Map.Load(cmbStages.SelectedIndex);
                 Main.UserSelectOtherStage();
                 Timer.Stop();
                 tbTime.Text = "00:00";
+
+                int index = MapSize.FindIndex((x => x.Rows == tmp[0] && x.Cols == tmp[1]));
+                cmbSize.SelectedIndex = index;
 
                 CurrentStageID = cmbStages.SelectedIndex;
                 btnUndo.IsEnabled = false;
@@ -137,21 +182,11 @@ namespace MazeRunner.Controls
 
         private void btnNext_Click(object sender, RoutedEventArgs e)
         {
-            Main.Map.Next();
-
-            if(Main.Map.PreviousMoveID > Main.Map.LastMoves.Count)
-            {
-                btnNext.IsEnabled = false;
-            }
         }
-        #endregion
 
         private void btnTrain_Click(object sender, RoutedEventArgs e)
         {
-            ga = new Evoluion();
-            this.ga.Mainflow(10, Main.Map.MapMatrix, 100);
-            double x = this.ga.Best.fitness;
-            MessageBox.Show(x.ToString()+" ........................... ");
         }
+        #endregion        
     }
 }

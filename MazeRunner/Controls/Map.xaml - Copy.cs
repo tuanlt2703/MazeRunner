@@ -14,35 +14,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Media.Animation;
+using MazeRunner.GA;
 
 namespace MazeRunner.Controls
 {
-    public enum Cell : int
-    {
-        Moveable = 0, Obstacle = 1, Runner = 2, Goal = 3, Chaser = 4
-    }
-
     public struct CharacterPos
     {
         public int RunnerX, RunnerY;
         public int ChaserX, ChaserY;
-    }
-
-    public struct Position
-    {
-        public int X, Y;
-        public double f, g, h;
-        public int xpre, ypre;
-        public Position(int x, int y, double f, double g)
-        {
-            this.X = x;
-            this.Y = y;
-            this.f = f;
-            this.g = g;
-            this.h = 0;
-            this.xpre = 0;
-            this.ypre = 0;
-        }
     }
 
     /// <summary>
@@ -50,25 +29,40 @@ namespace MazeRunner.Controls
     /// </summary>
     public partial class Map : UserControl
     {
+        #region Properties
         private readonly ImageBrush Map10x10 = new ImageBrush(new BitmapImage(new Uri(@"pack://application:,,,/MazeRunner;component/Images/Floor.png")));
-
-        #region Propeties
         private readonly string BrickPath = @"pack://application:,,,/MazeRunner;component/Images/Brick.png";
-        private double CellSize;
+        private readonly int MaxNumberOfObstacles = 40;
 
         public MainWindow Main;
         public int[,] MapMatrix;
-        private int MaxNumberOfObstacles;
-        public bool MapLoaded, isMoving;
-
         private Runner runner;
         private Chaser chaser;
+        public bool MapLoaded;
+        public bool isMoving;
 
-        //Undo controls
         public List<CharacterPos> LastMoves;
-        private CharacterPos Last;
         public int PreviousMoveID;
+        private CharacterPos Last;
         private bool isUndo;
+
+        public struct Pos
+        {
+            public int X, Y;
+            public double f, g, h;
+            public int xpre, ypre;
+            public Pos(int x, int y, double f, double g)
+            {
+                this.X = x;
+                this.Y = y;
+                this.f = f;
+                this.g = g;
+                this.h = 0;
+                this.xpre = 0;
+                this.ypre = 0;
+            }
+        }
+        public Pos Mummy, xrunner, Goal;
 
         //animate
         private Storyboard sb = new Storyboard();
@@ -78,11 +72,12 @@ namespace MazeRunner.Controls
         {
             InitializeComponent();
 
-            this.LastMoves = new List<CharacterPos>();
+            this.Background = Map10x10;
+            this.LastMoves = new List<CharacterPos>(3);
         }
 
         #region Methods
-        #region Map
+        #region Maps
         private void AddObstacle(double x, double y)
         {
             var aBrick = new Image();
@@ -90,8 +85,8 @@ namespace MazeRunner.Controls
             aBrick.Margin = new Thickness(y, x, 0, 0);
             aBrick.HorizontalAlignment = HorizontalAlignment.Left;
             aBrick.VerticalAlignment = VerticalAlignment.Top;
-            aBrick.Height = CellSize;
-            aBrick.Width = CellSize;
+            aBrick.Height = 45;
+            aBrick.Width = 45;
 
             gdMap.Children.Add(aBrick);
         }
@@ -103,12 +98,13 @@ namespace MazeRunner.Controls
             start.Margin = new Thickness(y, x, 0, 0);
             start.HorizontalAlignment = HorizontalAlignment.Left;
             start.VerticalAlignment = VerticalAlignment.Top;
-            start.Height = CellSize;
-            start.Width = CellSize;
-            gdMap.Children.Add(start);
+            start.Height = 45;
+            start.Width = 45;
 
-            runner = new Runner(i, j, CellSize, CellSize);
-            runner.Margin = new Thickness(y + 4, x, 0, 0);            
+            runner = new Runner(i, j);
+            runner.Margin = new Thickness(y + 3, x, 0, 0);
+
+            gdMap.Children.Add(start);
             gdMap.Children.Add(runner);
         }
 
@@ -119,8 +115,8 @@ namespace MazeRunner.Controls
             goal.Margin = new Thickness(y, x, 0, 0);
             goal.HorizontalAlignment = HorizontalAlignment.Left;
             goal.VerticalAlignment = VerticalAlignment.Top;
-            goal.Height = CellSize;
-            goal.Width = CellSize;
+            goal.Height = 45;
+            goal.Width = 45;
 
             var text = new TextBlock();
             text.FontSize = 17;
@@ -135,68 +131,10 @@ namespace MazeRunner.Controls
 
         private void AddChaser(int i, int j, double x, double y)
         {
-            chaser = new Chaser(i, j, CellSize, CellSize);
+            chaser = new Chaser(i, j);
             chaser.Margin = new Thickness(y, x, 0, 0);
 
             gdMap.Children.Add(chaser);
-        }
-
-        private void DrawBoundaryAndBackGround()
-        {
-            #region Boundary
-            //top boundary
-            for (int i = 0; i < MapMatrix.GetLength(0) + 2; i++)
-            {
-                AddObstacle(0, i * CellSize);
-            }
-            //right boundary
-            for (int i = 1; i < MapMatrix.GetLength(1) + 2; i++)
-            {
-                AddObstacle(i * CellSize, (MapMatrix.GetLength(1) + 1) * CellSize);
-            }
-            //bottom boundary
-            for (int i = 0; i < MapMatrix.GetLength(0) + 1; i++)
-            {
-                AddObstacle((MapMatrix.GetLength(0) + 1) * CellSize, i * CellSize);
-            }
-            //left boundary
-            for (int i = 1; i < MapMatrix.GetLength(1) + 1; i++)
-            {
-                AddObstacle(i * CellSize, 0);
-            }
-            #endregion
-            #region Background
-            bool interleave = true;
-            for (int i = 0; i < MapMatrix.GetLength(0); i++)
-            {
-                int j;
-                for (j = 0; j < MapMatrix.GetLength(1); j++)
-                {
-                    if (interleave)
-                    {
-                        var tile = new Grid();
-                        tile.Background = new SolidColorBrush(Color.FromRgb(65, 219, 42));
-                        tile.Margin = new Thickness((j + 1) * CellSize, (i + 1) * CellSize, 0, 0);
-                        tile.HorizontalAlignment = HorizontalAlignment.Left;
-                        tile.VerticalAlignment = VerticalAlignment.Top;
-                        tile.Height = CellSize;
-                        tile.Width = CellSize;
-
-                        gdMap.Children.Add(tile);
-
-                        interleave = false;
-                    }
-                    else
-                    {
-                        interleave = true;
-                    }
-                }
-                if (j % 2 == 0)
-                {
-                    interleave = !interleave;
-                }                
-            }
-            #endregion
         }
 
         private void DrawMap()
@@ -206,29 +144,27 @@ namespace MazeRunner.Controls
             isUndo = false;
             PreviousMoveID = -1;
 
-            CellSize = gdMap.Height / (MapMatrix.GetLength(0) + 2);
             //draw map
             gdMap.Children.Clear();
-            DrawBoundaryAndBackGround();
             for (int i = 0; i < MapMatrix.GetLength(0); i++)
             {
                 for (int j = 0; j < MapMatrix.GetLength(1); j++)
                 {
-                    if (MapMatrix[i, j] == (int)Cell.Obstacle)
+                    if (MapMatrix[i, j] == 1)
                     {
-                        AddObstacle((i + 1) * CellSize, (j + 1) * CellSize);
+                        AddObstacle((i + 1) * 45, (j + 1) * 45);
                     }
-                    else if (MapMatrix[i, j] == (int)Cell.Runner)
+                    else if (MapMatrix[i, j] == 2)
                     {
-                        AddRunner(i, j, (i + 1) * CellSize, (j + 1) * CellSize);
+                        AddRunner(i, j, (i + 1) * 45, (j + 1) * 45);
                     }
-                    else if (MapMatrix[i, j] == (int)Cell.Goal)
+                    else if (MapMatrix[i, j] == 3)
                     {
-                        AddGoal((i + 1) * CellSize, (j + 1) * CellSize);
+                        AddGoal((i + 1) * 45, (j + 1) * 45);
                     }
-                    else if (MapMatrix[i, j] == (int)Cell.Chaser)
+                    else if (MapMatrix[i, j] == 4)
                     {
-                        AddChaser(i, j, (i + 1) * CellSize, (j + 1) * CellSize);
+                        AddChaser(i, j, (i + 1) * 45, (j + 1) * 45);
                     }
                 }
             }
@@ -239,9 +175,25 @@ namespace MazeRunner.Controls
                 .Max();
             Grid.SetZIndex(runner, (maxZ++) + 1);
             Grid.SetZIndex(chaser, maxZ + 1);
-        }        
+        }
 
-        private void CreateRandomMap(int rows, int cols, int obstacles)
+        public void SaveStage(int level)
+        {
+            using (var writer = new StreamWriter(@"Maps\Stage " + level.ToString() + ".txt", false))
+            {
+                //write to text file
+                for (int i = 0; i < MapMatrix.GetLength(0); i++)
+                {
+                    for (int j = 0; j < MapMatrix.GetLength(1); j++)
+                    {
+                        writer.Write(MapMatrix[i, j].ToString() + " ");
+                    }
+                    writer.WriteLine();
+                }
+            }
+        }
+
+        private void CreateRandomMap(int level = 0, int rows = 13, int cols = 13)
         {
             Random rnd = new Random(System.DateTime.Now.Millisecond);
             MapMatrix = new int[rows, cols];
@@ -252,9 +204,6 @@ namespace MazeRunner.Controls
                     MapMatrix[i, j] = -1;
                 }
             }
-
-            //Init MaxNumberOfObstacles = 30% of map size
-            MaxNumberOfObstacles = obstacles;
 
             //random the maze            
             int x, y, CellCount = 0, ObstCount = 0;
@@ -296,7 +245,8 @@ namespace MazeRunner.Controls
                 x = rnd.Next(rows);
                 y = rnd.Next(cols);
             } while (MapMatrix[x, y] == 1);
-            MapMatrix[x, y] = (int)Cell.Runner;
+            MapMatrix[x, y] = 2;
+            xrunner = new Pos(x, y, 0, 0);
 
             //[3]: goal
             //random goal's post
@@ -305,8 +255,8 @@ namespace MazeRunner.Controls
                 x = rnd.Next(rows);
                 y = rnd.Next(cols);
             } while (MapMatrix[x, y] == 1 || MapMatrix[x, y] == 2);
-            MapMatrix[x, y] = (int)Cell.Goal;
-
+            MapMatrix[x, y] = 3;
+            Goal = new Pos(x, y, 0, 0);
             //[4]: Mummy
             //random chaser's starting post
             do
@@ -314,70 +264,50 @@ namespace MazeRunner.Controls
                 x = rnd.Next(rows);
                 y = rnd.Next(cols);
             } while (MapMatrix[x, y] == 1 || MapMatrix[x, y] == 2 || MapMatrix[x, y] == 3);
-            MapMatrix[x, y] = (int)Cell.Chaser;
+            MapMatrix[x, y] = 4;
+            Mummy = new Pos(x, y, 0, 0);
             #endregion
+
+            SaveStage(level);
         }
 
-        public void LoadRandomMap(int rows, int cols, int obstacles)
+        public void LoadRandomMap(int level = 0)
         {
-            CreateRandomMap(rows, cols, obstacles);
+            CreateRandomMap(level);
 
             DrawMap();
             MapLoaded = true;
         }
 
-        private int[] ReadMapFromFile(int level = 1)
+        private void ReadMapFromFile(int level = 1, int rows = 13, int cols = 13)
         {
-            var MapSize = new int[2];
             using (var reader = new StreamReader(@"Maps\Stage " + level.ToString() + ".txt"))
             {
-                var line = reader.ReadLine().Split(' ');
-                MapMatrix = new int[MapSize[0] = Int32.Parse(line[0]), MapSize[1] = Int32.Parse(line[1])];
+                MapMatrix = new int[rows, cols];
 
-                for (int i = 0; i < MapMatrix.GetLength(0); i++)
+                for (int i = 0; i < rows; i++)
                 {
                     var tmp = reader.ReadLine().Split(' ');
-                    for (int j = 0; j < MapMatrix.GetLength(1); j++)
+                    for (int j = 0; j < cols; j++)
                     {
                         MapMatrix[i, j] = Int32.Parse(tmp[j]);
                     }
                 }
             }
-
-            return MapSize;
         }
 
-        public int[] Load(int level = 1)
+        public void Load(int level = 1)
         {
-            var tmp = ReadMapFromFile(level);
+            ReadMapFromFile(level);
 
             DrawMap();
             MapLoaded = true;
-
-            return tmp;
-        }
-
-        public void SaveMap(int level)
-        {
-            using (var writer = new StreamWriter(@"Maps\Stage " + level.ToString() + ".txt", false))
-            {
-                //write to text file
-                writer.WriteLine(MapMatrix.GetLength(0) + " " + MapMatrix.GetLength(1));
-                for (int i = 0; i < MapMatrix.GetLength(0); i++)
-                {
-                    for (int j = 0; j < MapMatrix.GetLength(1); j++)
-                    {
-                        writer.Write(MapMatrix[i, j].ToString() + " ");
-                    }
-                    writer.WriteLine();
-                }
-            }
         }
         #endregion
 
         public bool CheckGoal()
         {
-            if (MapMatrix[runner.x, runner.y] == (int)Cell.Goal)
+            if (MapMatrix[runner.x, runner.y] == 3)
             {
                 Main.EndStage();
                 return true;
@@ -396,9 +326,10 @@ namespace MazeRunner.Controls
             //undo runner movement
             runner.x = LastMoves[PreviousMoveID].RunnerX;
             runner.y = LastMoves[PreviousMoveID].RunnerY;
+            //runner.Margin = new Thickness((runner.y + 1) * 45 + 3, (runner.x + 1) * 45, 0, 0);
             ////animate
             ThicknessAnimation r_ta = new ThicknessAnimation(runner.Margin,
-                new Thickness((runner.y + 1) * CellSize + 4, (runner.x + 1) * CellSize, 0, 0), TimeSpan.FromMilliseconds(100));
+                new Thickness((runner.y + 1) * 45 + 3, (runner.x + 1) * 45, 0, 0), TimeSpan.FromMilliseconds(100));
             Storyboard.SetTargetProperty(r_ta, new PropertyPath(Runner.MarginProperty));
             sb_tmp.Children.Add(r_ta);
             sb_tmp.Begin(runner, true);
@@ -406,8 +337,9 @@ namespace MazeRunner.Controls
             //undo chaser movement
             chaser.x = LastMoves[PreviousMoveID].ChaserX;
             chaser.y = LastMoves[PreviousMoveID].ChaserY;
+            //chaser.Margin = new Thickness((chaser.y + 1) * 45, (chaser.x + 1) * 45, 0, 0);
             ThicknessAnimation c_ta = new ThicknessAnimation(chaser.Margin,
-                new Thickness((chaser.y + 1) * CellSize, (chaser.x + 1) * CellSize, 0, 0), TimeSpan.FromMilliseconds(100));
+                new Thickness((chaser.y + 1) * 45, (chaser.x + 1) * 45, 0, 0), TimeSpan.FromMilliseconds(100));
             Storyboard.SetTargetProperty(c_ta, new PropertyPath(Chaser.MarginProperty));
             sb_tmp.Children.Add(c_ta);
             sb_tmp.Begin(chaser, true);
@@ -419,12 +351,46 @@ namespace MazeRunner.Controls
             //Main.Control.btnNext.IsEnabled = true;
         }
 
+        #region Chaser's Movement
+        public void StartChaserTurn()
+        {
+            //save last chaser pos
+            //initializing Last is avoidable, for its earlier's success
+            Last.ChaserX = chaser.x;
+            Last.ChaserY = chaser.y;
+            MapMatrix[Last.RunnerX, Last.RunnerY] = 0;
+            MapMatrix[runner.x, runner.y] = 2;
+
+            int move = chaser.Asmove(MapMatrix); // Map didn't have latest pos of chaser;
+
+            MapMatrix[Last.ChaserX, Last.ChaserY] = 0;
+            MapMatrix[chaser.x, chaser.y] = 4;
+
+            StartChaserAnimation();
+        }
+
+        ThicknessAnimation Chaser_ta = new ThicknessAnimation();
+        private void StartChaserAnimation()
+        {
+            Chaser_ta.From = chaser.Margin;
+            Chaser_ta.To = new Thickness((chaser.y + 1) * 45, (chaser.x + 1) * 45, 0, 0);
+            Chaser_ta.Duration = new Duration(TimeSpan.FromMilliseconds(500));
+            Chaser_ta.Completed += Chaser_ta_Completed;
+            //config storyboard
+            Storyboard.SetTargetProperty(Chaser_ta, new PropertyPath(Chaser.MarginProperty));
+            sb.Children.Clear();
+            sb.Children.Add(Chaser_ta);
+            //begin animation
+            sb.Begin(chaser, true);
+        }
+        #endregion
+
         #region Runner's Movements
         ThicknessAnimation Runner_ta = new ThicknessAnimation();
         private void StartRunnerAnimation()
         {
             Runner_ta.From = runner.Margin;
-            Runner_ta.To = new Thickness((runner.y + 1) * CellSize + 3, (runner.x + 1) * CellSize, 0, 0);
+            Runner_ta.To = new Thickness((runner.y + 1) * 45 + 3, (runner.x + 1) * 45, 0, 0);
             Runner_ta.Duration = new Duration(TimeSpan.FromMilliseconds(500));
             Runner_ta.Completed += Runner_ta_Completed;
 
@@ -458,7 +424,7 @@ namespace MazeRunner.Controls
 
         public void MoveDown()
         {
-            if (runner.x < MapMatrix.GetLength(1) - 1)
+            if (runner.x < 13)
             {
                 if (MapMatrix[runner.x + 1, runner.y] != 1)
                 {
@@ -494,7 +460,7 @@ namespace MazeRunner.Controls
 
         public void MoveRight()
         {
-            if (runner.y < MapMatrix.GetLength(0) - 1)
+            if (runner.y < 13)
             {
                 if (MapMatrix[runner.x, runner.y + 1] != 1)
                 {
@@ -508,40 +474,6 @@ namespace MazeRunner.Controls
                     StartRunnerAnimation();
                 }
             }
-        }
-        #endregion
-
-        #region Chaser's Movement
-        public void StartChaserTurn()
-        {
-            //save last chaser pos
-            //initializing Last is avoidable, for its earlier's success
-            Last.ChaserX = chaser.x;
-            Last.ChaserY = chaser.y;
-            MapMatrix[Last.RunnerX, Last.RunnerY] = 0;
-            MapMatrix[runner.x, runner.y] = 2;
-
-            chaser.Asmove(MapMatrix);
-
-            MapMatrix[Last.ChaserX, Last.ChaserY] = 0;
-            MapMatrix[chaser.x, chaser.y] = 4;
-
-            StartChaserAnimation();
-        }
-
-        ThicknessAnimation Chaser_ta = new ThicknessAnimation();
-        private void StartChaserAnimation()
-        {
-            Chaser_ta.From = chaser.Margin;
-            Chaser_ta.To = new Thickness((chaser.y + 1) * CellSize, (chaser.x + 1) * CellSize, 0, 0);
-            Chaser_ta.Duration = new Duration(TimeSpan.FromMilliseconds(500));
-            Chaser_ta.Completed += Chaser_ta_Completed;
-            //config storyboard
-            Storyboard.SetTargetProperty(Chaser_ta, new PropertyPath(Chaser.MarginProperty));
-            sb.Children.Clear();
-            sb.Children.Add(Chaser_ta);
-            //begin animation
-            sb.Begin(chaser, true);
         }
         #endregion
         #endregion
@@ -606,7 +538,7 @@ namespace MazeRunner.Controls
             }
             Main.Control.btnUndo.IsEnabled = true;
         }
-        #endregion
+        #endregion      
     }
 }
       

@@ -23,7 +23,7 @@ namespace MazeRunner.Controls
         private Image Mummy;
         public int x, y;
 
-        public Runner(int i, int j, int width = 45, int height = 45)
+        public Runner(int i, int j, double width, double height)
         {
             InitializeComponent();
 

@@ -54,13 +54,11 @@ namespace MazeRunner
         {
             ChaserTurn = true;
             Map.StartChaserTurn();
-            //MessageBox.Show("chaser turn");
         }
 
         public void EndChaserTurn()
         {
             ChaserTurn = false;
-            //MessageBox.Show("runner turn");
         }
 
         public void EndStage(bool win = true)

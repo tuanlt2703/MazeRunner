@@ -24,12 +24,13 @@
         <TextBox x:Name="tbScore" IsReadOnly="False" Background="Transparent" BorderThickness="0" Padding="0,2,0,0" Text="N/A"
                  FontSize="15" HorizontalAlignment="Left" Margin="53,53,0,0"  VerticalAlignment="Top"/>
 
-        <TextBlock Text="Time: " FontSize="17" HorizontalAlignment="Left" Margin="5,105,0,0"  VerticalAlignment="Top"/>
+
         <TextBox x:Name="tbTime" IsReadOnly="False" Background="Transparent" Text="00:00"
                  FontSize="17" HorizontalAlignment="Left" Margin="50,102,0,0"  VerticalAlignment="Top"/>
 
-        <Button x:Name="btnStart" Click="btnStart_Click" Content="StartGame"   FontSize="15" HorizontalAlignment="Left" Margin="18,196,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button x:Name="btnRandom" Click="btnRandom_Click" Content="Random" FontSize="15" HorizontalAlignment="Left" Margin="14,150,0,0" VerticalAlignment="Top" Width="83" Height="41"/>
+        <Button x:Name="btnRandom" Click="btnRandom_Click" Content="Random" FontSize="15" HorizontalAlignment="Left" Margin="14,175,0,0" VerticalAlignment="Top" Width="83" Height="41"/>
+        <TextBlock Text="Size:" FontSize="17" HorizontalAlignment="Left" Margin="6,147,0,0"  VerticalAlignment="Top"/>
+        <ComboBox x:Name="cmbSize" HorizontalAlignment="Left" Margin="41,147,0,0" VerticalAlignment="Top" Width="60"/>
 
         <Button x:Name="btnUndo" Click="btnUndo_Click" IsEnabled="False" Content="&lt;&lt;" FontSize="15" HorizontalAlignment="Left" Margin="7,230,0,0" VerticalAlignment="Top" Width="45"/>
         <Button x:Name="btnNext" Click="btnNext_Click" IsEnabled="False" Content="&gt;&gt;" FontSize="15" HorizontalAlignment="Left" Margin="57,230,0,0" VerticalAlignment="Top" Width="45"/>
@@ -37,11 +38,11 @@
         <Button x:Name="btnReset" IsEnabled="False" Click="btnReset_Click" Content="Reset Maze" FontSize="15" HorizontalAlignment="Left" Margin="15,272,0,0" VerticalAlignment="Top"/>
 
         <Button x:Name="btnSave" IsEnabled="False" Click="btnSave_Click" Content="Save Maze" FontSize="15" HorizontalAlignment="Left" Margin="18,309,0,0" VerticalAlignment="Top"/>
-        
+
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="715" Margin="107,0,0,0" VerticalAlignment="Top" Width="3"/>
 
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="4" Margin="0,350,0,0" VerticalAlignment="Top" Width="108"/>
-        
+
         <Button x:Name="btnTrain" IsEnabled="True" Content="Start Training" FontSize="15" HorizontalAlignment="Left" Margin="8,371,0,0" VerticalAlignment="Top" Click="btnTrain_Click"/>
         <Button x:Name="btnStartBot" IsEnabled="False" Content="N-E Start" FontSize="15" HorizontalAlignment="Left" Margin="23,405,0,0" VerticalAlignment="Top"/>
     </Grid>

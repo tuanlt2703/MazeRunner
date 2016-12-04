@@ -6,5 +6,8 @@
              xmlns:local="clr-namespace:MazeRunner.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="675" d:DesignWidth="675">
-    <Grid x:Name="gdMap" Height="675" Width="675"/>
+    <Grid x:Name="gdMap" Height="675" Width="675">
+        <!--<Image x:Name="image" HorizontalAlignment="Left" Height="84.375" Width="84.375"
+               Margin="84.375,84.375,0,0" VerticalAlignment="Top" Source="pack://application:,,,/MazeRunner;component/Images/Brick.png"/>-->
+    </Grid>
 </UserControl>

@@ -23,7 +23,7 @@ namespace MazeRunner.Controls
         private Image Mummy;
         public int x, y;
 
-        public Chaser(int i, int j, int width = 45, int height = 45)
+        public Chaser(int i, int j, double width, double height)
         {
             InitializeComponent();
 
@@ -40,96 +40,46 @@ namespace MazeRunner.Controls
             y = j;
         }
 
-        public int Run(int[,] MapMatrix)
-        {
-            //random
-            Random rnd = new Random(System.DateTime.Now.Millisecond);
-            int move, i, j;
-            bool validmove;
-            do
-            {
-                i = x;
-                j = y;
-                //[0] = up, [1] = down, [2] = left, [3] = right
-                move = rnd.Next(4);
-                switch (move)
-                {
-                    case 0:
-                        {
-                            i -= 1;
-                            break;
-                        }
-                    case 1:
-                        {
-                            i += 1;
-                            break;
-                        }
-                    case 2:
-                        {
-                            j -= 1;
-                            break;
-                        }
-                    case 3:
-                        {
-                            j += 1;
-                            break;
-                        }
-                    default:
-                        break;
-                }
-                validmove = true;
-                if ((i < 0 || i >= MapMatrix.GetLength(0)) || (j < 0 || j >= MapMatrix.GetLength(1)))
-                {
-                    validmove = false;
-                }
-                else if (MapMatrix[i, j] == 1)
-                {
-                    validmove = false;
-                }
-            } while (!validmove);
-
-
-            x = i;
-            y = j;
-            return move;
-        }
         #region A*
-        static double h(ref Map.Pos k, Map.Pos m)
+        static double h(ref Position k, Position m)
         {
             return Math.Max(Math.Abs(k.X - m.X), Math.Abs(k.Y - m.Y));
         }
-        public static List<Map.Pos> runAstar(int[,] emuMap)
+
+        private static List<Position> runAstar(int[,] emuMap)
         {
             int i, j, next = 0, r, n, m, dem1, dem2, co = -1, cc = -1, ci;//co mean checkopen cc mean checkclose
-            int xstart=0, ystart=0;
-            Map.Pos emuRunner= new Map.Pos();
-            int xgoal=0, ygoal=0;
-            for (i = 0; i < 13; i++)
-                for (j = 0; j < 13; j++)
+            int xstart = 0, ystart = 0;
+            Position emuRunner = new Position();
+            int xgoal = 0, ygoal = 0;
+            for (i = 0; i < emuMap.GetLength(0); i++)
+            {
+                for (j = 0; j < emuMap.GetLength(1); j++)
                 {
                     if (emuMap[i, j] == 4) //2 runner 4 chaser;
                     {
                         xstart = i;
                         ystart = j;
                     }
-                    if(emuMap[i,j]==2)
+                    if (emuMap[i, j] == 2)
                     {
                         xgoal = i;
                         ygoal = j;
                     }
-                };
+                }
+            }
             emuRunner.X = xgoal;
             emuRunner.Y = ygoal;
-            m = 13;
-            n = 13;
+            m = emuMap.GetLength(0);
+            n = emuMap.GetLength(1);
             bool found = false;
-            int[] dx = new int[] {  0, -1,1 ,0};
-            int[] dy = new int[] { -1,  0, 0,1};
-            List<Map.Pos> open, close;
-            Map.Pos temp, temp2;
-            open = new List<Map.Pos>();
-            close = new List<Map.Pos>();
-            temp = new Map.Pos(xstart, ystart, 0, 0);
+            int[] dx = new int[] { 0, -1, 1, 0 };
+            int[] dy = new int[] { -1, 0, 0, 1 };
+            List<Position> open, close;
+            Position temp, temp2;
+            open = new List<Position>();
+            close = new List<Position>();
+            temp = new Position(xstart, ystart, 0, 0);
             open.Add(temp);
             while (open.Count != 0)
             {
@@ -185,8 +135,6 @@ namespace MazeRunner.Controls
                                 open.Add(temp);
                                 close.RemoveAt(cc);
                             };
-
-
                         }
 
                     co = -1;
@@ -197,13 +145,12 @@ namespace MazeRunner.Controls
                 open.RemoveAt(next);
                 next = 0;
             }
-            List<Map.Pos> path;
-            path = new List<Map.Pos>();
-            Map.Pos tg;
-            tg = new Map.Pos();
+            List<Position> path;
+            path = new List<Position>();
+            Position tg;
+            tg = new Position();
             if (found)
             {
-
                 temp2 = open[next];
                 while (temp2.X != xstart || temp2.Y != ystart)
                 {
@@ -221,18 +168,19 @@ namespace MazeRunner.Controls
                 }
                 return path;
             }
-            else return null;
-
+            else
+                return null;
         }
+
         static void vl(Point oct2, int x, int y, ref double kq)
         {
             kq = Math.Sqrt((oct2.X - x) * (oct2.X - x) + (oct2.Y - y) * (oct2.X - y));
         }
-        public int Asmove(int[,] MapMatrix)
+
+        public void Asmove(int[,] MapMatrix)
         {
-            int move = 1, i;
-            int t1, t2;
-            List<Map.Pos> Path = runAstar(MapMatrix);
+            int move = 1;
+            List<Position> Path = runAstar(MapMatrix);
             if (Path != null)
             {
                 int xt, yt;
@@ -243,21 +191,15 @@ namespace MazeRunner.Controls
 
                 this.x = xt;
                 this.y = yt;
-                if (xt == 0 && yt == 1) return 3;
-                if (xt == -1 && yt == 0) return 1;
-                if (xt == 1 && yt == 0) return 0;
-                if (xt == 0 && yt == -1) return 2;
-                return move;
             }
-            else return Run(MapMatrix);
-
         }
-        public static List<int> Asmove2( int[,] MapMatrix)
+
+        public static List<int> Asmove2(int[,] MapMatrix)
         {
             List<int> kq = new List<int>();
-            List<Map.Pos> Path = runAstar(MapMatrix);
+            List<Position> Path = runAstar(MapMatrix);
             int move = 0;
-            if (Path != null&& Path.Count!=0)
+            if (Path != null && Path.Count != 0)
             {
                 int xt, yt;
                 xt = Path[Path.Count - 1].X;
@@ -267,15 +209,9 @@ namespace MazeRunner.Controls
                 kq.Add(yt);
                 return kq;
             }
-            else return null;
-
-
+            else
+                return null;
         }
-    }
-
-
-
-}
-
-
         #endregion
+    }
+}
