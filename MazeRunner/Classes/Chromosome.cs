@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MazeRunner.Controls;
+using System.Runtime.Serialization;
 
 namespace MazeRunner.Classes
 {
+    [Serializable]
     public class Chromosome : IComparable<Chromosome>
     {
         public NeuralNework NN_Runner;
@@ -187,6 +189,20 @@ namespace MazeRunner.Classes
             tmpWeights[index1] = tmpWeights[index2];
             tmpWeights[index2] = tmp;
             NN_Runner.DevelopPhenotype(tmpWeights);
+        }
+        #endregion
+
+        #region Serializer
+        public Chromosome(SerializationInfo info, StreamingContext ctxt)
+        {
+            NN_Runner = (NeuralNework)info.GetValue("Networks", typeof(NeuralNework));
+            Fitness = (double)info.GetValue("Fit", typeof(double));
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Networks", NN_Runner);
+            info.AddValue("Fit", Fitness);
         }
         #endregion
     }

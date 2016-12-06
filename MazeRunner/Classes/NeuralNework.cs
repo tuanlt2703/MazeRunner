@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra.Double;
+using System.Runtime.Serialization;
 
 namespace MazeRunner.Classes
 {
     /// <summary>
     /// Particularly implemented to work with NEAT
     /// </summary>
+    [Serializable]
     public class NeuralNework
     {
         #region Properies
@@ -284,6 +286,27 @@ namespace MazeRunner.Classes
                     OutputLayerWeights[i, j] = Weights[m++];
                 }
             }
+        }
+        #endregion
+
+        #region Serializer
+        //Deserialization constructor
+        public NeuralNework(SerializationInfo info, StreamingContext ctxt)
+        {
+            InputLayer = (double[,])info.GetValue("Input", typeof(double[,]));
+            OutputLayerWeights = (double[,])info.GetValue("Output", typeof(double[,]));
+            HiddenLayers = (List<double[,]>)info.GetValue("Hiddens", typeof(List<double[,]>));
+            Layers = (List<int>)info.GetValue("Layers", typeof(List<int>));
+            Innovation = (int)info.GetValue("Inov", typeof(int));
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Input", InputLayer);
+            info.AddValue("Output", OutputLayerWeights);
+            info.AddValue("Hiddens", HiddenLayers);
+            info.AddValue("Layers", Layers);
+            info.AddValue("Inov", Innovation);
         }
         #endregion
     }

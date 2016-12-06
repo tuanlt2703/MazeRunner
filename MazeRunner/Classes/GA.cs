@@ -1,23 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Serialization;
 
 namespace MazeRunner.Classes
 {
+    [Serializable]
     public class GA
     {
         #region Properties
         private List<Chromosome> Population;
-        private int Pop_Size;
-        private int Generations;
-        private double Mutate_Prob;
-        private double CrossOver_Prob;
-        private double TopologyMuate_Prob;
+        public int Pop_Size;
+        public int Generations;
+        public double Mutate_Prob;
+        public double CrossOver_Prob;
+        public double TopologyMuate_Prob;
+        public List<int> HLayers
+        {
+            get
+            {
+                return Population[0].NN_Runner.Layers;
+            }
+        }
 
         private double LastBestCost;
         private int Counter;
+
+        //
+        public bool isFinished;
+        private int CurrentGen;
         #endregion
 
         public GA(int n_pop, int gens, double m_prob, double x_prob, double top_prob)
@@ -31,6 +41,9 @@ namespace MazeRunner.Classes
 
             this.LastBestCost = 0;
             this.Counter = 0;
+
+            this.isFinished = false;
+            this.CurrentGen = 0;
         }
 
         #region Methods
@@ -130,6 +143,12 @@ namespace MazeRunner.Classes
             }
         }
 
+        /// <summary>
+        /// Start training completely new GA
+        /// </summary>
+        /// <param name="MapMatrix"></param>
+        /// <param name="HiddenLayers"></param>
+        /// <param name="gc"></param>
         public void Excute(int [,] MapMatrix, List<int> HiddenLayers, MazeRunner.Controls.GameControl gc)
         {
             Population.Clear();
@@ -138,9 +157,9 @@ namespace MazeRunner.Classes
             CreatePopulation(MapMatrix, HiddenLayers);
             Selection();
 
-            for (int i = 0; i < Generations; i++)
+            for (CurrentGen = 0; CurrentGen < Generations; CurrentGen++)
             {
-                Random r = new Random(DateTime.Now.Millisecond + i);
+                Random r = new Random(DateTime.Now.Millisecond + CurrentGen);
 
                 //CrossOver
                 List<Chromosome> parents = Select_Parent(r);
@@ -164,8 +183,83 @@ namespace MazeRunner.Classes
                 Selection();
 
                 MazeRunner.Controls.GameControl.Process pc = new Controls.GameControl.Process(gc.ShowProcess);
-                gc.Dispatcher.Invoke(pc, new object[] { Population[0], i });
+                gc.Dispatcher.Invoke(pc, new object[] { Population[0], CurrentGen });
             }
+
+            //finished
+            isFinished = true;
+            //gc.SaveTrainedGA();
+            MazeRunner.Controls.GameControl.Finished fin = new Controls.GameControl.Finished(gc.SaveTrainedGA);
+            gc.Dispatcher.Invoke(fin);
+        }
+
+        /// <summary>
+        /// Continue previous training
+        /// </summary>
+        /// <param name="MapMatrix"></param>
+        /// <param name="gc"></param>
+        public void Continue(int[,] MapMatrix, MazeRunner.Controls.GameControl gc)
+        {
+            for (; CurrentGen < Generations; CurrentGen++)
+            {
+                Random r = new Random(DateTime.Now.Millisecond + CurrentGen);
+
+                //CrossOver
+                List<Chromosome> parents = Select_Parent(r);
+                foreach (var c in CrossOver(parents))
+                {
+                    c.Evaluate(MapMatrix);
+                    Population.Add(c);
+                }
+
+                //Mutate
+                for (int j = 1; j < Population.Count; j++)
+                {
+                    if (r.NextDouble() < Mutate_Prob)
+                    {
+                        Mutate(Population[j]);
+                        Population[j].Evaluate(MapMatrix);
+                    }
+                }
+
+                //
+                Selection();
+
+                MazeRunner.Controls.GameControl.Process pc = new Controls.GameControl.Process(gc.ShowProcess);
+                gc.Dispatcher.Invoke(pc, new object[] { Population[0], CurrentGen });
+            }
+
+            //finished
+            //gc.SaveTrainedGA();
+            MazeRunner.Controls.GameControl.Finished fin = new Controls.GameControl.Finished(gc.SaveTrainedGA);
+            gc.Dispatcher.Invoke(fin);
+        }
+        #endregion
+
+        #region Serializer
+        //Deserialization constructor
+        public GA(SerializationInfo info, StreamingContext ctxt)
+        {
+            Population = (List<Chromosome>)info.GetValue("Pop", typeof(List<Chromosome>));
+            Pop_Size = (int)info.GetValue("PopSize", typeof(int));
+            Generations = (int)info.GetValue("Gens", typeof(int));
+            Mutate_Prob = (double)info.GetValue("Mutate", typeof(double));
+            CrossOver_Prob = (double)info.GetValue("CX", typeof(double));
+            TopologyMuate_Prob = (double)info.GetValue("Topology", typeof(double));
+            isFinished = (bool)info.GetValue("Last", typeof(bool));
+            CurrentGen = (int)info.GetValue("LastGen", typeof(int));
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Pop", Population);
+            info.AddValue("PopSize", Pop_Size);
+            info.AddValue("Gens", Generations);
+            info.AddValue("Mutate", Mutate_Prob);
+            info.AddValue("CX", CrossOver_Prob);
+            info.AddValue("Topology", TopologyMuate_Prob);
+            info.AddValue("Last", isFinished);
+            info.AddValue("LastGen", CurrentGen);
         }
         #endregion
     }

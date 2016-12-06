@@ -64,7 +64,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="3,524,4,139">
             <StackPanel x:Name="spHiddenLayers" HorizontalAlignment="Left" VerticalAlignment="Top" Width="80"/>
         </ScrollViewer>
-        <Button x:Name="btnTrain" IsEnabled="False" Content="Start Training" FontSize="15" HorizontalAlignment="Left" Margin="8,578,0,0" VerticalAlignment="Top" Click="btnTrain_Click"/>
+        <Button x:Name="btnTrain" IsEnabled="False" Width="95" Content="Start Training" FontSize="15" HorizontalAlignment="Left" Margin="8,578,0,0" VerticalAlignment="Top" Click="btnTrain_Click"/>
         <Button x:Name="btnStartBot" IsEnabled="False" Content="N-E Start" FontSize="15" HorizontalAlignment="Left" Margin="22,647,0,0" VerticalAlignment="Top"/>
 
         <TextBlock Text="Gens:" HorizontalAlignment="Left" Margin="8,606,0,0"  VerticalAlignment="Top"/>
