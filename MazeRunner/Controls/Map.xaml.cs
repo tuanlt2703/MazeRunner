@@ -26,6 +26,14 @@ namespace MazeRunner.Controls
     {
         public int RunnerX, RunnerY;
         public int ChaserX, ChaserY;
+
+        public bool GotCaught
+        {
+            get
+            {
+                return (RunnerX == ChaserX && RunnerY == ChaserY);
+            }
+        }
     }
 
     public struct Position

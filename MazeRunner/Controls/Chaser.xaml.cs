@@ -179,14 +179,12 @@ namespace MazeRunner.Controls
 
         public void Asmove(int[,] MapMatrix)
         {
-            int move = 1;
             List<Position> Path = runAstar(MapMatrix);
             if (Path != null)
             {
                 int xt, yt;
                 xt = Path[Path.Count - 1].X;
                 yt = Path[Path.Count - 1].Y;
-                Path.RemoveAt(Path.Count - 1);
                 //[0] = up, [1] = down, [2] = left, [3] = right
 
                 this.x = xt;
@@ -198,13 +196,12 @@ namespace MazeRunner.Controls
         {
             List<int> kq = new List<int>();
             List<Position> Path = runAstar(MapMatrix);
-            int move = 0;
             if (Path != null && Path.Count != 0)
             {
                 int xt, yt;
                 xt = Path[Path.Count - 1].X;
                 yt = Path[Path.Count - 1].Y;
-                Path.RemoveAt(Path.Count - 1);
+
                 kq.Add(xt);
                 kq.Add(yt);
                 return kq;

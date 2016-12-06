@@ -20,30 +20,58 @@
         </TextBlock>
         <ComboBox x:Name="cmbStages" FontSize="17" SelectedIndex="0" DropDownClosed="cmbStages_DropDownClosed" HorizontalAlignment="Left" Margin="62,10,0,0" VerticalAlignment="Top" Width="40" Height="27"/>
 
-        <TextBlock Text="Score: " FontSize="17" HorizontalAlignment="Left" Margin="6,53,0,0"  VerticalAlignment="Top"/>
+        <TextBlock Text="Score: " FontSize="17" HorizontalAlignment="Left" Margin="6,45,0,0"  VerticalAlignment="Top"/>
         <TextBox x:Name="tbScore" IsReadOnly="False" Background="Transparent" BorderThickness="0" Padding="0,2,0,0" Text="N/A"
-                 FontSize="15" HorizontalAlignment="Left" Margin="53,53,0,0"  VerticalAlignment="Top"/>
+                 FontSize="15" HorizontalAlignment="Left" Margin="53,45,0,0"  VerticalAlignment="Top"/>
 
-
+        <TextBlock Text="Time:" FontSize="17" HorizontalAlignment="Left" Margin="7,78,0,0"  VerticalAlignment="Top"/>
         <TextBox x:Name="tbTime" IsReadOnly="False" Background="Transparent" Text="00:00"
-                 FontSize="17" HorizontalAlignment="Left" Margin="50,102,0,0"  VerticalAlignment="Top"/>
+                 FontSize="17" HorizontalAlignment="Left" Margin="50,76,0,0"  VerticalAlignment="Top"/>
 
-        <Button x:Name="btnRandom" Click="btnRandom_Click" Content="Random" FontSize="15" HorizontalAlignment="Left" Margin="14,175,0,0" VerticalAlignment="Top" Width="83" Height="41"/>
-        <TextBlock Text="Size:" FontSize="17" HorizontalAlignment="Left" Margin="6,147,0,0"  VerticalAlignment="Top"/>
-        <ComboBox x:Name="cmbSize" HorizontalAlignment="Left" Margin="41,147,0,0" VerticalAlignment="Top" Width="60"/>
+        <Button x:Name="btnRandom" Click="btnRandom_Click" Content="Random" FontSize="15" HorizontalAlignment="Left" Margin="14,146,0,0" VerticalAlignment="Top" Width="83" Height="41"/>
+        <TextBlock Text="Size:" FontSize="17" HorizontalAlignment="Left" Margin="6,117,0,0"  VerticalAlignment="Top"/>
+        <ComboBox x:Name="cmbSize" HorizontalAlignment="Left" Margin="41,118,0,0" VerticalAlignment="Top" Width="60"/>
 
-        <Button x:Name="btnUndo" Click="btnUndo_Click" IsEnabled="False" Content="&lt;&lt;" FontSize="15" HorizontalAlignment="Left" Margin="7,230,0,0" VerticalAlignment="Top" Width="45"/>
-        <Button x:Name="btnNext" Click="btnNext_Click" IsEnabled="False" Content="&gt;&gt;" FontSize="15" HorizontalAlignment="Left" Margin="57,230,0,0" VerticalAlignment="Top" Width="45"/>
+        <Button x:Name="btnUndo" Click="btnUndo_Click" IsEnabled="False" Content="&lt;&lt;" FontSize="15" HorizontalAlignment="Left" Margin="7,201,0,0" VerticalAlignment="Top" Width="45"/>
+        <Button x:Name="btnNext" IsEnabled="False" Content="&gt;&gt;" FontSize="15" HorizontalAlignment="Left" Margin="57,201,0,0" VerticalAlignment="Top" Width="45"/>
 
-        <Button x:Name="btnReset" IsEnabled="False" Click="btnReset_Click" Content="Reset Maze" FontSize="15" HorizontalAlignment="Left" Margin="15,272,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnReset" IsEnabled="False" Click="btnReset_Click" Content="Reset Maze" FontSize="15" HorizontalAlignment="Left" Margin="15,243,0,0" VerticalAlignment="Top"/>
 
-        <Button x:Name="btnSave" IsEnabled="False" Click="btnSave_Click" Content="Save Maze" FontSize="15" HorizontalAlignment="Left" Margin="18,309,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnSave" IsEnabled="False" Click="btnSave_Click" Content="Save Maze" FontSize="15" HorizontalAlignment="Left" Margin="18,280,0,0" VerticalAlignment="Top"/>
 
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="715" Margin="107,0,0,0" VerticalAlignment="Top" Width="3"/>
 
-        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="4" Margin="0,350,0,0" VerticalAlignment="Top" Width="108"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="4" Margin="0,321,0,0" VerticalAlignment="Top" Width="108"/>
 
-        <Button x:Name="btnTrain" IsEnabled="True" Content="Start Training" FontSize="15" HorizontalAlignment="Left" Margin="8,371,0,0" VerticalAlignment="Top" Click="btnTrain_Click"/>
-        <Button x:Name="btnStartBot" IsEnabled="False" Content="N-E Start" FontSize="15" HorizontalAlignment="Left" Margin="23,405,0,0" VerticalAlignment="Top"/>
+        <TextBlock Text="NE Config" FontWeight="Bold" FontSize="17" HorizontalAlignment="Left" Margin="15,330,0,0"  VerticalAlignment="Top"/>
+        <TextBlock Text="Pop_size:" FontSize="14"  HorizontalAlignment="Left" Margin="6,358,0,0"  VerticalAlignment="Top"/>
+        <TextBox x:Name="tbPopSize" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="tb_PreviewKeyDown" IsEnabled="False" Width="36" HorizontalAlignment="Left" Margin="65,356,0,0"  VerticalAlignment="Top"/>
+
+        <TextBlock Text="Gens:" FontSize="14"  HorizontalAlignment="Left" Margin="7,382,0,0"  VerticalAlignment="Top"/>
+        <TextBox x:Name="tbGens" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="tb_PreviewKeyDown" IsEnabled="False" Width="62" HorizontalAlignment="Left" Margin="42,382,0,0"  VerticalAlignment="Top"/>
+
+        <TextBlock Text="XProb:" FontSize="14"  HorizontalAlignment="Left" Margin="7,409,0,0"  VerticalAlignment="Top"/>
+        <TextBox x:Name="tbCXProb" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="tb_PreviewKeyDown" IsEnabled="False" Width="52" HorizontalAlignment="Left" Margin="50,409,0,0"  VerticalAlignment="Top"/>
+
+        <TextBlock Text="MProb:" FontSize="14"  HorizontalAlignment="Left" Margin="7,436,0,0"  VerticalAlignment="Top"/>
+        <TextBox x:Name="tbMuProb" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="tb_PreviewKeyDown" IsEnabled="False" Width="49" HorizontalAlignment="Left" Margin="54,436,0,0"  VerticalAlignment="Top"/>
+
+        <TextBlock Text="TProb:" FontSize="14"  HorizontalAlignment="Left" Margin="8,463,0,0"  VerticalAlignment="Top"/>
+        <TextBox x:Name="tbTopProb" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="tb_PreviewKeyDown" IsEnabled="False" Width="49" HorizontalAlignment="Left" Margin="54,463,0,0"  VerticalAlignment="Top"/>
+
+        <TextBlock Text="Hidden layers:" FontSize="13" TextWrapping="Wrap" HorizontalAlignment="Left" Margin="7,485,0,0"  VerticalAlignment="Top" Height="34" Width="46"/>
+        <TextBox x:Name="tbLayers" TextChanged="tbLayers_TextChanged" PreviewTextInput="tb_PreviewTextInput" PreviewKeyDown="tb_PreviewKeyDown" IsEnabled="False" Width="49" HorizontalAlignment="Left" Margin="54,497,0,0"  VerticalAlignment="Top"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="3,524,4,139">
+            <StackPanel x:Name="spHiddenLayers" HorizontalAlignment="Left" VerticalAlignment="Top" Width="80"/>
+        </ScrollViewer>
+        <Button x:Name="btnTrain" IsEnabled="False" Content="Start Training" FontSize="15" HorizontalAlignment="Left" Margin="8,578,0,0" VerticalAlignment="Top" Click="btnTrain_Click"/>
+        <Button x:Name="btnStartBot" IsEnabled="False" Content="N-E Start" FontSize="15" HorizontalAlignment="Left" Margin="22,647,0,0" VerticalAlignment="Top"/>
+
+        <TextBlock Text="Gens:" HorizontalAlignment="Left" Margin="8,606,0,0"  VerticalAlignment="Top"/>
+        <TextBox x:Name="tbCurGens" IsReadOnly="True" Background="Transparent" FontSize="10" VerticalContentAlignment="Center"
+        	HorizontalAlignment="Left" Margin="37,607,0,0"  VerticalAlignment="Top" Width="35"/>
+        <TextBlock Text="Best:" HorizontalAlignment="Left" Margin="11,627,0,0"  VerticalAlignment="Top"/>
+        <TextBox x:Name="tbBestCh" IsReadOnly="True" Background="Transparent" FontSize="10" VerticalContentAlignment="Center"
+        	HorizontalAlignment="Left" Margin="37,627,0,0"  VerticalAlignment="Top"/>
     </Grid>
 </UserControl>

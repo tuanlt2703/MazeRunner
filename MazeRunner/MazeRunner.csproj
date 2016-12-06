@@ -83,6 +83,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Classes\Chromosome.cs" />
+    <Compile Include="Classes\GA.cs" />
+    <Compile Include="Classes\NeuralNework.cs" />
     <Compile Include="Controls\Chaser.xaml.cs">
       <DependentUpon>Chaser.xaml</DependentUpon>
     </Compile>
@@ -139,6 +142,7 @@
   <ItemGroup>
     <Resource Include="Images\Explorer.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
