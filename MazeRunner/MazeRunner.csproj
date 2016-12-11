@@ -84,8 +84,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Classes\Chromosome.cs" />
-    <Compile Include="Classes\GA.cs" />
-    <Compile Include="Classes\NeuralNework.cs" />
+    <Compile Include="Classes\ConnectionNode.cs" />
+    <Compile Include="Classes\NEAT.cs" />
+    <Compile Include="Classes\Node.cs" />
+    <Compile Include="Classes\Species.cs" />
     <Compile Include="Controls\Chaser.xaml.cs">
       <DependentUpon>Chaser.xaml</DependentUpon>
     </Compile>

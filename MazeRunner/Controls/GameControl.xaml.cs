@@ -42,16 +42,18 @@ namespace MazeRunner.Controls
             gc.tbPopSize.IsEnabled = true;
             gc.tbGens.Text = "1000";
             gc.tbGens.IsEnabled = true;
-            gc.tbCXProb.Text = "0.5";
+            gc.tbCXProb.Text = "0.7";
             gc.tbCXProb.IsEnabled = true;
-            gc.tbMuProb.Text = "0.3";
+            gc.tbMuProb.Text = "0.5";
             gc.tbMuProb.IsEnabled = true;
-            gc.tbTopProb.Text = "0.15";
-            gc.tbTopProb.IsEnabled = true;
-            gc.tbLayers.Text = "2";
-            gc.tbLayers.IsEnabled = true;
-            gc.setHiddenLayers(new List<int>() { 3, 5 });
-
+            gc.tbPointProb.Text = "0.5";
+            gc.tbPointProb.IsEnabled = true;
+            gc.tbLinkProb.Text = "0.4";
+            gc.tbLinkProb.IsEnabled = true;
+            gc.tbNodeProb.Text = "0.5";
+            gc.tbNodeProb.IsEnabled = true;
+            gc.tbEDProb.Text = "0.3";
+            gc.tbEDProb.IsEnabled = true;
             //if (Rows == 6)
             //{
             //}
@@ -78,7 +80,7 @@ namespace MazeRunner.Controls
         private List<Difficultity> MapSize;
         private List<TextBox> HiddenLayers;
 
-        private GA bot;
+        private NEAT bot;
         private Thread th;
         private bool Started = false;
 
@@ -106,11 +108,11 @@ namespace MazeRunner.Controls
         public delegate void Finished();
         public void SaveTrainedGA()
         {
-            using (Stream stream = File.Open("TrainedGA.bin", FileMode.Create))
-            {
-                BinaryFormatter bin = new BinaryFormatter();
-                bin.Serialize(stream, bot);
-            }
+            //using (Stream stream = File.Open("TrainedGA.bin", FileMode.Create))
+            //{
+            //    BinaryFormatter bin = new BinaryFormatter();
+            //    bin.Serialize(stream, bot);
+            //}
 
             btnTrain.Content = "Start Training";
             btnStartBot.IsEnabled = true;
@@ -148,15 +150,7 @@ namespace MazeRunner.Controls
         public void EndGame()
         {
             Timer.Stop();
-        }
-
-        public void setHiddenLayers(List<int> Hiddens)
-        {
-            for (int i = 0; i < Hiddens.Count; i++)
-            {
-                HiddenLayers[i].Text = Hiddens[i].ToString();
-            }
-        }
+        }        
 
         private List<int> getHiddenLayers()
         {
@@ -170,18 +164,18 @@ namespace MazeRunner.Controls
 
         private void LoadLastGA_Config()
         {
-            tbPopSize.Text = bot.Pop_Size.ToString();
-            tbGens.Text = bot.Generations.ToString();
-            tbCXProb.Text = bot.CrossOver_Prob.ToString();
-            tbMuProb.Text = bot.Mutate_Prob.ToString();
-            tbTopProb.Text = bot.TopologyMuate_Prob.ToString();
-            tbLayers.Text = (bot.HLayers.Count - 2).ToString();
+            //tbPopSize.Text = bot.Pop_Size.ToString();
+            //tbGens.Text = bot.Generations.ToString();
+            //tbCXProb.Text = bot.CrossOver_Prob.ToString();
+            //tbMuProb.Text = bot.Mutate_Prob.ToString();
+            //tbTopProb.Text = bot.TopologyMuate_Prob.ToString();
+            //tbLayers.Text = (bot.HLayers.Count - 2).ToString();
 
-            int i = 1;
-            foreach (var tb in HiddenLayers)
-            {
-                tb.Text = bot.HLayers[i++].ToString();
-            }
+            //int i = 1;
+            //foreach (var tb in HiddenLayers)
+            //{
+            //    tb.Text = bot.HLayers[i++].ToString();
+            //}
         }
         #endregion
 
@@ -204,31 +198,6 @@ namespace MazeRunner.Controls
         {
             if (e.Key == Key.Space)
                 e.Handled = true;
-        }
-
-        private void tbLayers_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            HiddenLayers.Clear();
-            spHiddenLayers.Children.Clear();
-            int n = Int32.Parse(tbLayers.Text);
-            for (int i = 0; i < n; i++)
-            {
-                TextBlock tmpTBL = new TextBlock();
-                tmpTBL.Text = "H-Layer " + (i + 1) + ": ";
-                tmpTBL.Margin = new Thickness(0, 3, 0, 0);
-
-                TextBox tmpTB = new TextBox();
-                tmpTB.Width = 28;
-                tmpTB.PreviewTextInput += tb_PreviewTextInput;
-                tmpTB.PreviewKeyDown += tb_PreviewKeyDown;
-                HiddenLayers.Add(tmpTB);
-
-                StackPanel tmpSP = new StackPanel();
-                tmpSP.Orientation = Orientation.Horizontal;
-                tmpSP.Children.Add(tmpTBL);
-                tmpSP.Children.Add(tmpTB);
-                spHiddenLayers.Children.Add(tmpSP);
-            }
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -294,25 +263,25 @@ namespace MazeRunner.Controls
 
                 //try to load previous GA
                 //string path;
-                if (File.Exists("TrainedGA.bin"))
-                {
-                    using (Stream stream = File.Open("TrainedGA.bin", FileMode.Open))
-                    {
-                        BinaryFormatter bin = new BinaryFormatter();
-                        bot = (GA)bin.Deserialize(stream);
-                    }
+                //if (File.Exists("TrainedGA.bin"))
+                //{
+                //    using (Stream stream = File.Open("TrainedGA.bin", FileMode.Open))
+                //    {
+                //        BinaryFormatter bin = new BinaryFormatter();
+                //        bot = (GA)bin.Deserialize(stream);
+                //    }
 
-                    LoadLastGA_Config();
-                }
-                else if (File.Exists("Stopped GA.bin"))
-                {
-                    using (Stream stream = File.Open("Stopped GA.bin", FileMode.Open))
-                    {
-                        BinaryFormatter bin = new BinaryFormatter();
-                        bot = (GA)bin.Deserialize(stream);
-                    }
-                    LoadLastGA_Config();
-                }
+                //    LoadLastGA_Config();
+                //}
+                //else if (File.Exists("Stopped GA.bin"))
+                //{
+                //    using (Stream stream = File.Open("Stopped GA.bin", FileMode.Open))
+                //    {
+                //        BinaryFormatter bin = new BinaryFormatter();
+                //        bot = (GA)bin.Deserialize(stream);
+                //    }
+                //    LoadLastGA_Config();
+                //}
             }
         }
 
@@ -339,51 +308,54 @@ namespace MazeRunner.Controls
             {
                 if (bot == null)
                 {
-                    bot = new GA(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text),
-                    Double.Parse(tbMuProb.Text), Double.Parse(tbCXProb.Text), Double.Parse(tbTopProb.Text));
+                    bot = new NEAT(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text), Double.Parse(tbCXProb.Text),
+                        Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text), 
+                        Double.Parse(tbNodeProb.Text), Double.Parse(tbEDProb.Text));
+
                     var HLayers = getHiddenLayers();
-                    th = new Thread(() => bot.Excute(Main.Map.MapMatrix, HLayers, this));
+                    th = new Thread(() => bot.Excute(Main.Map.MapMatrix, this));
                     th.Start();
 
                     btnTrain.Content = "Training...";
                     Started = true;
                     btnStartBot.IsEnabled = false;
                 }
-                else if (!bot.isFinished)                      
-                {
-                    if (MessageBox.Show("Countinue previous training?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                    {
-                        th = new Thread(() => bot.Continue(Main.Map.MapMatrix, this));
-                        th.Start();
+                //else if (!bot.isFinished)
+                //{
+                //    if (MessageBox.Show("Countinue previous training?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                //    {
+                //        th = new Thread(() => bot.Continue(Main.Map.MapMatrix, this));
+                //        th.Start();
 
-                        btnTrain.Content = "Training...";
-                        Started = true;
-                        btnStartBot.IsEnabled = false;
-                    }                    
-                }
-                else if (MessageBox.Show("GA have been trained, do you want to re-train it?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                {
-                    bot = new GA(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text),
-                    Double.Parse(tbMuProb.Text), Double.Parse(tbCXProb.Text), Double.Parse(tbTopProb.Text));
-                    var HLayers = getHiddenLayers();
-                    th = new Thread(() => bot.Excute(Main.Map.MapMatrix, HLayers, this));
-                    th.Start();
+                //        btnTrain.Content = "Training...";
+                //        Started = true;
+                //        btnStartBot.IsEnabled = false;
+                //    }
+                //}
+                //else if (MessageBox.Show("GA have been trained, do you want to re-train it?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                //{
+                //    bot = new NEAT(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text), Double.Parse(tbCXProb.Text),
+                //        Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text),
+                //        Double.Parse(tbNodeProb.Text), Double.Parse(tbEDProb.Text));
+                //    var HLayers = getHiddenLayers();
+                //    th = new Thread(() => bot.Excute(Main.Map.MapMatrix, this));
+                //    th.Start();
 
-                    btnTrain.Content = "Training...";
-                    Started = true;
-                    btnStartBot.IsEnabled = false;
-                }
+                //    btnTrain.Content = "Training...";
+                //    Started = true;
+                //    btnStartBot.IsEnabled = false;
+                //}
             }
             else
             {
-                if (MessageBox.Show("Training in process, do you want to save and stop the training?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes) 
+                if (MessageBox.Show("Training in process, do you want to save and stop the training?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
                     th.Abort();
-                    using (Stream stream = File.Open("Stopped GA.bin", FileMode.Create))
-                    {
-                        BinaryFormatter bin = new BinaryFormatter();
-                        bin.Serialize(stream, bot);
-                    }
+                    //using (Stream stream = File.Open("Stopped GA.bin", FileMode.Create))
+                    //{
+                    //    BinaryFormatter bin = new BinaryFormatter();
+                    //    bin.Serialize(stream, bot);
+                    //}
 
                     Started = false;
                     btnTrain.Content = "Start Training";
