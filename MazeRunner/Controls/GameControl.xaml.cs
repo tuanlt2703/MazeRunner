@@ -8,6 +8,7 @@ using MazeRunner.Classes;
 using System.Windows.Input;
 using System.Threading;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
 
 namespace MazeRunner.Controls
 {
@@ -15,7 +16,7 @@ namespace MazeRunner.Controls
     {
         public int Rows, Cols;
         public string Size { get; set; }
-        double MaxObs;
+        public double MaxObs;
         public int NumberOfObsstacles
         {
             get
@@ -45,12 +46,12 @@ namespace MazeRunner.Controls
             gc.tbCXProb.Text = "0.7";
             gc.tbCXProb.IsEnabled = true;
             gc.tbMuProb.Text = "0.5";
-            gc.tbMuProb.IsEnabled = true;
+            gc.tbMuProb.IsEnabled = false;
             gc.tbPointProb.Text = "0.5";
             gc.tbPointProb.IsEnabled = true;
             gc.tbLinkProb.Text = "0.4";
             gc.tbLinkProb.IsEnabled = true;
-            gc.tbNodeProb.Text = "0.5";
+            gc.tbNodeProb.Text = "0.1";
             gc.tbNodeProb.IsEnabled = true;
             gc.tbEDProb.Text = "0.3";
             gc.tbEDProb.IsEnabled = true;
@@ -78,7 +79,6 @@ namespace MazeRunner.Controls
         private DateTime TimerStart;
         private int CurrentStageID = -1;
         private List<Difficultity> MapSize;
-        private List<TextBox> HiddenLayers;
 
         private NEAT bot;
         private Thread th;
@@ -94,12 +94,11 @@ namespace MazeRunner.Controls
 
             LoadStageList();
             LoadMaSizepList();
-            HiddenLayers = new List<TextBox>();
         }
 
         #region Methods
-        public delegate void Process(Chromosome Best, int i);
-        public void ShowProcess(Chromosome Best, int i)
+        public delegate void Process(Genotype Best, int i);
+        public void ShowProcess(Genotype Best, int i)
         {
             tbCurGens.Text = (i + 1).ToString();
             tbBestCh.Text = Best.Fitness.ToString();
@@ -150,17 +149,7 @@ namespace MazeRunner.Controls
         public void EndGame()
         {
             Timer.Stop();
-        }        
-
-        private List<int> getHiddenLayers()
-        {
-            List<int> tmp = new List<int>();
-            foreach (var tb in HiddenLayers)
-            {
-                tmp.Add(Int32.Parse(tb.Text));
-            }
-            return tmp;
-        }
+        }                
 
         private void LoadLastGA_Config()
         {
@@ -301,19 +290,19 @@ namespace MazeRunner.Controls
                 btnUndo.IsEnabled = false;
             }
         }
-        
+
         private void btnTrain_Click(object sender, RoutedEventArgs e)
         {
+            #region old
             if (!Started)
             {
                 if (bot == null)
                 {
                     bot = new NEAT(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text), Double.Parse(tbCXProb.Text),
-                        Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text), 
+                        Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text),
                         Double.Parse(tbNodeProb.Text), Double.Parse(tbEDProb.Text));
 
-                    var HLayers = getHiddenLayers();
-                    th = new Thread(() => bot.Excute(Main.Map.MapMatrix, this));
+                    th = new Thread(() => bot.Execute(Main.Map.MapMatrix, this));
                     th.Start();
 
                     btnTrain.Content = "Training...";
@@ -362,6 +351,7 @@ namespace MazeRunner.Controls
                     btnStartBot.IsEnabled = true;
                 }
             }
+            #endregion
         }
         #endregion
     }

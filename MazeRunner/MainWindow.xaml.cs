@@ -29,7 +29,9 @@ namespace MazeRunner
         public MainWindow()
         {
             InitializeComponent();
-
+            //this.Left = 0;
+            //this.Top = 0;
+            this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.GameStarted = false;
 
             this.Control.Main = this;

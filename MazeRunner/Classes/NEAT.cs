@@ -10,11 +10,12 @@ namespace MazeRunner.Classes
     {
         public int TotalNodes;
         private List<ConnectionNode> Innovations;
+
         private List<Species> Population;
-        private Chromosome Best;
+        private Genotype Best;
         private int Pop_Size;
         private int Generations;
-        
+
         public static double CrossOver_Prob;
         public static double Mutate_Prob;
         public static double PointMutate_Prob;
@@ -25,10 +26,10 @@ namespace MazeRunner.Classes
         public bool isFinished;
         private int CurrentGen;
 
-        #region Constructors
+        #region Constructor
         public NEAT(int n_pop, int gens, double xProb, double mProb, double PProb, double LProb, double NodeProb, double EDProb)
         {
-            this.TotalNodes = 0;
+            this.TotalNodes = 0; 
             this.Innovations = new List<ConnectionNode>();
             this.Population = new List<Species>();
 
@@ -44,46 +45,28 @@ namespace MazeRunner.Classes
         #endregion
 
         #region Methods
-        /// <summary>
-        /// To check whether new connection is alrdy existed or not
-        /// </summary>
-        /// <param name="connection"></param>
-        public void CheckNewConnection(ConnectionNode connection)
+        public void CheckNewConnection(ConnectionNode newConnection)
         {
-            var tmp = Innovations.Find((x => x.From.NodeID == connection.From.NodeID && x.To.NodeID == connection.To.NodeID));
+            var tmp = Innovations.Find((x => x.From.ID == newConnection.From.ID && x.To.ID == newConnection.To.ID));
             if (tmp == null)
             {
-                Innovations.Add(connection);
-                connection.Innovation = Innovations.Count;
+                Innovations.Add(newConnection);
+                newConnection.Innovation = Innovations.Count;
             }
             else
             {
-                connection.Innovation = tmp.Innovation;
-            }            
+                newConnection.Innovation = tmp.Innovation;
+            }
         }
 
-        private void CreatePopulation(int[,] Map, int OutputNodes = 2)
+        private void CreatePopulation(int[,] MapMatrix, int output = 2)
         {
-            List<Node> input = new List<Node>();
-            for (int i = 0; i < Map.GetLength(0)*Map.GetLength(1); i++)
-            {
-                var tmp = new Node(TotalNodes++);
-                input.Add(tmp);
-            }
-
-            List<Node> output = new List<Node>();
-            for (int i = 0; i < OutputNodes; i++)
-            {
-                output.Add(new Node(TotalNodes++, NodeType.Output, ActivationMethod.Binary));
-            }
-
             Population = new List<Species>();
             Population.Add(new Species());
             for (int i = 0; i < Pop_Size; i++)
             {
-                Chromosome tmp = new Chromosome(new List<Node>(input.Select(x => (Node)x.Clone()).ToList()),
-                                                new List<Node>(output.Select(x => (Node)x.Clone()).ToList()), this);
-                tmp.Evaluate(Map);
+                Genotype tmp = new Genotype(MapMatrix.GetLength(0)* MapMatrix.GetLength(1), output, this);
+                tmp.Evaluate(MapMatrix, this);
 
                 bool foundSpecies = false;
                 foreach (var species in Population)
@@ -98,34 +81,36 @@ namespace MazeRunner.Classes
                 if (!foundSpecies)
                 {
                     Species newSpecies = new Species();
-                    newSpecies.Individuals.Add(tmp);
+                    newSpecies.Natives.Add(tmp);
                     Population.Add(newSpecies);
                 }
             }
+
+            TotalNodes = MapMatrix.GetLength(0) * MapMatrix.GetLength(1) + output;
         }
 
         private void Selection()
         {
             Population[0].Selection();
-            Best = Population[0].Individuals[0];
+            Best = Population[0].Natives[0];
             for (int i = 1; i < Population.Count; i++)
             {
                 Population[i].Selection();
-                if (Best.Fitness < Population[i].Individuals[0].Fitness)
+                if (Best.Fitness < Population[i].Natives[0].Fitness)
                 {
-                    Best = Population[i].Individuals[0];
+                    Best = Population[i].Natives[0];
                 }
             }
         }
 
-        private void Breed(Random r, int[,] Map)
+        private void Breed(int[,] Map, NEAT neat)
         {
-            List<Chromosome> childs = new List<Chromosome>();
-            for (int i = 0; i < Population.Count; i++)
+            List<Genotype> childs = new List<Genotype>();
+            foreach (var species in Population)
             {
-                foreach (var ch in Population[i].Breed(r))
+                foreach (var ch in species.Breed(this))
                 {
-                    ch.Evaluate(Map);
+                    ch.Evaluate(Map, neat);
                     childs.Add(ch);
                 }
             }
@@ -145,34 +130,33 @@ namespace MazeRunner.Classes
                 if (!foundSpecies)
                 {
                     Species newSpecies = new Species();
-                    newSpecies.Individuals.Add(childs[i]);
+                    newSpecies.Natives.Add(childs[i]);
                     Population.Add(newSpecies);
                 }
             }
         }
 
-        private void Mutate(Random r, int[,] Map)
+        private void Mutate(int[,] Map)
         {
             foreach (var species in Population)
             {
-                species.Mutate(r, Map, this);
+                species.Mutate(Map, this);
             }
         }
 
-        public void Excute(int[,] MapMatrix, MazeRunner.Controls.GameControl gc)
+        public void Execute(int[,] MapMatrix, MazeRunner.Controls.GameControl gc)
         {
             Population.Clear();
 
             //Init population
             CreatePopulation(MapMatrix);
             Selection();
+
             for (CurrentGen = 0; CurrentGen < Generations; CurrentGen++)
             {
-                Random r = new Random(DateTime.Now.Millisecond + CurrentGen);
-
                 //CrossOver - Mutate
-                Breed(r, MapMatrix);
-                Mutate(r, MapMatrix);
+                Breed(MapMatrix, this);
+                Mutate(MapMatrix);
 
                 Selection();
 
@@ -180,11 +164,10 @@ namespace MazeRunner.Classes
                 gc.Dispatcher.Invoke(pc, new object[] { Best, CurrentGen });
             }
 
-            //finished
-            isFinished = true;
-            //gc.SaveTrainedGA();
-            MazeRunner.Controls.GameControl.Finished fin = new Controls.GameControl.Finished(gc.SaveTrainedGA);
-            gc.Dispatcher.Invoke(fin);
+            ////finished
+            //isFinished = true;
+            //MazeRunner.Controls.GameControl.Finished fin = new Controls.GameControl.Finished(gc.SaveTrainedGA);
+            //gc.Dispatcher.Invoke(fin);
         }
         #endregion
     }
