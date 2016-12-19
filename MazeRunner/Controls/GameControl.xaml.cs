@@ -25,8 +25,11 @@ namespace MazeRunner.Controls
             }
         }
 
+        public static Difficultity VeryEasy = new Difficultity()
+        { Rows = 3, Cols = 3, MaxObs = 0.2, Size = "VEasy 3x3" };
+
         public static Difficultity Easy = new Difficultity()
-        { Rows = 6, Cols = 6, MaxObs = 0.15, Size = "Easy 6x6" };
+        { Rows = 6, Cols = 6, MaxObs = 0.2, Size = "Easy 6x6" };
 
         public static Difficultity Normal = new Difficultity()
         { Rows = 8, Cols = 8, MaxObs = 0.2, Size = "Normal 8x8" };
@@ -97,8 +100,8 @@ namespace MazeRunner.Controls
         }
 
         #region Methods
-        public delegate void Process(Genotype Best, int i);
-        public void ShowProcess(Genotype Best, int i)
+        public delegate void Process(Chromosome Best, int i);
+        public void ShowProcess(Chromosome Best, int i)
         {
             tbCurGens.Text = (i + 1).ToString();
             tbBestCh.Text = Best.Fitness.ToString();
@@ -129,6 +132,7 @@ namespace MazeRunner.Controls
         private void LoadMaSizepList()
         {
             MapSize = new List<Difficultity>();
+            MapSize.Add(Difficultity.VeryEasy);
             MapSize.Add(Difficultity.Easy);
             MapSize.Add(Difficultity.Normal);
             MapSize.Add(Difficultity.Hard);
@@ -150,22 +154,6 @@ namespace MazeRunner.Controls
         {
             Timer.Stop();
         }                
-
-        private void LoadLastGA_Config()
-        {
-            //tbPopSize.Text = bot.Pop_Size.ToString();
-            //tbGens.Text = bot.Generations.ToString();
-            //tbCXProb.Text = bot.CrossOver_Prob.ToString();
-            //tbMuProb.Text = bot.Mutate_Prob.ToString();
-            //tbTopProb.Text = bot.TopologyMuate_Prob.ToString();
-            //tbLayers.Text = (bot.HLayers.Count - 2).ToString();
-
-            //int i = 1;
-            //foreach (var tb in HiddenLayers)
-            //{
-            //    tb.Text = bot.HLayers[i++].ToString();
-            //}
-        }
         #endregion
 
         #region Events
@@ -299,7 +287,7 @@ namespace MazeRunner.Controls
                 if (bot == null)
                 {
                     bot = new NEAT(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text), Double.Parse(tbCXProb.Text),
-                        Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text),
+                    Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text),
                         Double.Parse(tbNodeProb.Text), Double.Parse(tbEDProb.Text));
 
                     th = new Thread(() => bot.Execute(Main.Map.MapMatrix, this));

@@ -19,19 +19,21 @@ namespace MazeRunner.Classes
     public class Node
     {
         public int ID;
-        public NodeType Type;
-        public double Value;
+        public NodeType Type;        
         public ActivationMethod Activator;
+        public double Value;
         public bool isActivated;
+        public int Level;
 
         #region Constructors
-        public Node(int id, NodeType type = NodeType.Input, ActivationMethod method = ActivationMethod.Sigmoid)
+        public Node(int id, NodeType type = NodeType.Input, ActivationMethod method = ActivationMethod.Sigmoid, int level = -1, bool activated = true)
         {
             this.ID = id;
             this.Type = type;
             this.Activator = method;
             this.Value = 0;
-            this.isActivated = false;
+            this.isActivated = activated;
+            this.Level = level;
         }
         #endregion
 
@@ -53,17 +55,17 @@ namespace MazeRunner.Classes
             }
         }
 
-        public double Active(double val)
+        public double Active()
         {
             if (Activator == ActivationMethod.Sigmoid)
             {
                 isActivated = true;
-                return Sigmoid(val);
+                return Sigmoid(this.Value);
             }
             else if (Activator == ActivationMethod.Binary)
             {
                 isActivated = true;
-                return BinaryActivation(val);
+                return BinaryActivation(this.Value);
             }
 
             return -1;
@@ -71,7 +73,7 @@ namespace MazeRunner.Classes
 
         public Node Clone()
         {
-            return new Node(this.ID, this.Type, this.Activator);
+            return new Node(this.ID, this.Type, this.Activator, this.Level, this.isActivated);
         }
         #endregion
     }
@@ -99,7 +101,8 @@ namespace MazeRunner.Classes
         {
             if (isEnable)
             {
-                return From.Value * Weight;
+                To.Value += From.Value * Weight;
+                return To.Value;
             }
 
             return 0;
@@ -114,6 +117,7 @@ namespace MazeRunner.Classes
         {
             this.isEnable = !this.isEnable;
         }
+
         //public ConnectionNode Clone()
         //{
         //    return new ConnectionNode(this.From.Clone(), this.To.Clone(),this.Weight, this.Innovation, this.isEnable);         

@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace MazeRunner.Classes
 {
-    public class Species
+    //a collection of chromosome
+    public class Species : IComparable<Species>
     {
-        public List<Genotype> Natives;
+        public List<Chromosome> Natives;
+        public double TotalFitness;
 
         private static readonly double DeltaDisjoint = 2.0;
         private static readonly double DeltaWeights = 0.4;
@@ -17,12 +19,19 @@ namespace MazeRunner.Classes
         #region Constructors
         public Species()
         {
-            this.Natives = new List<Genotype>();
+            this.Natives = new List<Chromosome>();
+            this.TotalFitness = 0;
         }
         #endregion
 
+
         #region Methods
-        private double cacl_Disjoint(Genotype child)
+        public int CompareTo(Species other)
+        {
+            return other.TotalFitness.CompareTo(TotalFitness);
+        }
+
+        private double cacl_Disjoint(Chromosome child)
         {
             List<int> list1 = new List<int>();
             foreach (var connection in child.ConnectionGenes)
@@ -55,7 +64,7 @@ namespace MazeRunner.Classes
             return Species.DeltaDisjoint * (disjointGenes / Math.Max(child.ConnectionGenes.Count, Natives[0].ConnectionGenes.Count));
         }
 
-        private double cacl_Weights(Genotype child)
+        private double cacl_Weights(Chromosome child)
         {
             double sum = 0;
             int matchingGenes = 0;
@@ -74,7 +83,7 @@ namespace MazeRunner.Classes
             return Species.DeltaWeights * (sum / matchingGenes);
         }
 
-        public bool addNewChild(Genotype child)
+        public bool addNewChild(Chromosome child)
         {
             if (Natives.Count == 0)
             {
@@ -94,17 +103,15 @@ namespace MazeRunner.Classes
         public void Selection()
         {
             Natives.Sort();
-            Natives.Reverse();
 
-            Natives.RemoveRange(1, Natives.Count - 1);
-            //if (Natives.Count > 10)
-            //{
-            //    Natives.RemoveRange(Natives.Count / 2, Natives.Count / 2 - 1);
-            //}
+            //because there will be a lot of species existing, we need to keep only the best (or somes) individual in each species 
+            if (Natives.Count > 5)
+            {
+                Natives.RemoveRange(5, Natives.Count - 5);
+            }            
         }
 
-        #region CX
-        private Genotype CrossOver(Genotype p1, Genotype p2, NEAT neat)
+        private Chromosome CrossOver(Chromosome p1, Chromosome p2)
         {
             if (p2.Fitness > p1.Fitness)
             {
@@ -114,30 +121,30 @@ namespace MazeRunner.Classes
             }
 
             //copy all genes(nodes and connections) from p1 to child
-            Genotype child = p1.Clone();
+            Chromosome child = p1.Clone();
 
             //copy all mismatch genes(nodes and connections) from p2 to child
             foreach (var connection in p2.ConnectionGenes)
             {
-                Node from = connection.From;
-                Node to = connection.To;
-                ConnectionNode cnn = new ConnectionNode(from, to);
+                Node cnn_from = connection.From;
+                Node cnn_to = connection.To;
+                ConnectionNode cnn = new ConnectionNode(cnn_from, cnn_to);
 
-                cnn = child.ConnectionGenes.Find((x => x.From.ID == from.ID && x.To.ID == to.ID));
+                cnn = child.ConnectionGenes.Find((x => x.From.ID == cnn_from.ID && x.To.ID == cnn_to.ID));
                 if (cnn == null) //mismatch connection-gene found
                 {
                     //check if from/to node exist in child
-                    Node from_tmp = child.NodeGenes.Find((x => x.ID == from.ID));
-                    if (from_tmp == null) 
+                    Node from_tmp = child.NodeGenes.Find((x => x.ID == cnn_from.ID));
+                    if (from_tmp == null)
                     {
-                        from_tmp = from.Clone();
+                        from_tmp = cnn_from.Clone();
                         child.NodeGenes.Add(from_tmp);
                     }
 
-                    Node to_tmp = child.NodeGenes.Find((x => x.ID == to.ID));
+                    Node to_tmp = child.NodeGenes.Find((x => x.ID == cnn_to.ID));
                     if (to_tmp == null)
                     {
-                        to_tmp = to.Clone();
+                        to_tmp = cnn_to.Clone();
                         child.NodeGenes.Add(to_tmp);
                     }
 
@@ -150,30 +157,29 @@ namespace MazeRunner.Classes
             return child;
         }
 
-        private List<Genotype> CrossOver(List<Genotype> parents, NEAT neat)
+        private List<Chromosome> CrossOver(List<Chromosome> parents)
         {
-            List<Genotype> Childs = new List<Genotype>();
+            List<Chromosome> Childs = new List<Chromosome>();
             for (int i = 0; i < parents.Count; i += 2)
             {
-                Childs.Add(CrossOver(parents[i], parents[i + 1], neat));
+                Childs.Add(CrossOver(parents[i], parents[i + 1]));
             }
 
             return Childs;
         }
-        #endregion
 
-        public List<Genotype> Breed(NEAT neat)
+        public List<Chromosome> Breed()
         {
-            List<Genotype> childs;
+            List<Chromosome> childs;
 
             //Select parents to breed
             Random rand = new Random(System.DateTime.Now.Millisecond);
-            List<Genotype> parents = new List<Genotype>();
+            List<Chromosome> parents = new List<Chromosome>();
             if (Natives.Count >= 2)
             {
                 parents.Add(Natives[0]);
                 parents.Add(Natives[1]);
-                
+
                 for (int i = 2; i < Natives.Count; i++)
                 {
                     if (rand.NextDouble() < NEAT.CrossOver_Prob)
@@ -185,22 +191,22 @@ namespace MazeRunner.Classes
                 {
                     parents.Add(Natives[rand.Next(0, Natives.Count)]);
                 }
-                childs = CrossOver(parents, neat);
+                childs = CrossOver(parents);
             }
             else
             {
-                childs = new List<Genotype>();
+                childs = new List<Chromosome>();
                 childs.Add(Natives[rand.Next(0, Natives.Count)].Clone());
             }
             return childs;
         }
-        
+
         public void Mutate(int[,] Map, NEAT neat)
         {
             foreach (var gene in Natives)
             {
                 gene.Mutate(neat);
-                gene.Evaluate(Map, neat);
+                gene.Evaluate(Map);
             }
         }
         #endregion
