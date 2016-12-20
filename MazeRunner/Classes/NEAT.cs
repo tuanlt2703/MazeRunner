@@ -74,11 +74,11 @@ namespace MazeRunner.Classes
 
         /// <summary>
         /// check the following cases:
-        /// 1/ if nodes in i-th HDlayer is 0, create new node, return it
-        /// 2/ if nodes in i-th HDlayer is full, return a node in it (i-th HDlayer) randomly
-        /// 3/ if nodes in i-th HDlayer is not full, create a random number x: [0; 1]
-        ///    3a/ return a node in i-th HDlayer randomly
-        ///    3b/ x > 0.5: create new node, return it 
+        /// 1/ if nodes in i-th Layer is 0, create new node, return it
+        /// 2/ if nodes in i-th Layer is full, return a node in it (i-th HDlayer) randomly
+        /// 3/ if nodes in i-th Layer is not full, create a random number x: [0; 1]
+        ///    3a/ if Connection.ithLayerNodes.Count smaller than ithLayerNodes.Count: return a node in it(i-th HDlayer) randomly
+        ///    3b/ else: create new node, return it 
         /// </summary>
         /// <param name="ith_layer"></param>
         /// <param name="input_output_count"></param>
@@ -86,6 +86,17 @@ namespace MazeRunner.Classes
         /// <returns></returns>
         public Node getNewNode(int ith_layer, int input_output_count, List<Node> ithLayerNodes)
         {
+            if (ith_layer == 0) //lớp ẩn thứ 0
+            {
+                if (TotalNodes.Count - 2 > ith_layer) //lớp ẩn thứ 0 ko rỗng
+                {
+                    if (TotalNodes[ith_layer+2].Count == NEAT.MaxHiddenNodePerLayer) //lớp ẩn thứ 0 fulled
+                    {
+                        int a = 1;
+                    }
+                }
+                
+            }
             int FirstNodeID = input_output_count + ith_layer * NEAT.MaxHiddenNodePerLayer;
             int EndNodeID = FirstNodeID + NEAT.MaxHiddenNodePerLayer - 1;
 
@@ -93,38 +104,43 @@ namespace MazeRunner.Classes
 
             //new node in ith_layer => level of node = ith + 1
             Node newNode;
-            if (TotalNodes[ith_layer].Count == 0) //case 1: i-th layer is empty
-            {
-                newNode = new Node(TotalNodesCount, NodeType.Hidden, ActivationMethod.Sigmoid, ith_layer + 1);
-                TotalNodes[ith_layer].Add(newNode.ID);
+            if (TotalNodes.Count - 2 <= ith_layer) //case 1: i-th layer is empty
+            {                
+                newNode = new Node(FirstNodeID, NodeType.Hidden, ActivationMethod.Sigmoid, ith_layer + 1);
+
+                List<int> newLayer = new List<int>();
+                newLayer.Add(newNode.ID);
+
+                TotalNodes.Add(newLayer);
                 return newNode;
             }
 
-            if (TotalNodes[ith_layer].Count == NEAT.MaxHiddenNodePerLayer) //case 2: i-th layer is fulled
+            if (TotalNodes[ith_layer + 2].Count == NEAT.MaxHiddenNodePerLayer) //case 2: i-th layer is fulled
             {
                 do
                 {
-                    newNode = new Node(TotalNodes[ith_layer][rand.Next(0, TotalNodes[ith_layer].Count)],
-                    NodeType.Hidden, ActivationMethod.Sigmoid, ith_layer + 1);
+                    newNode = new Node(TotalNodes[ith_layer + 2][rand.Next(0, TotalNodes[ith_layer + 2].Count)],
+                                                        NodeType.Hidden, ActivationMethod.Sigmoid, ith_layer + 1);
                 } while (ithLayerNodes.Find((x => x.ID == newNode.ID)) != null);
                 return newNode;
             }
             else//case 3: i-th layer is not empty, not full
             {
-                if (rand.NextDouble() <= 0.5)//branch 3a
+                if (ithLayerNodes.Count < TotalNodes[ith_layer + 2].Count)//case 3a
                 {
                     do
                     {
-                        newNode = new Node(TotalNodes[ith_layer][rand.Next(0, TotalNodes[ith_layer].Count)],
-                        NodeType.Hidden, ActivationMethod.Sigmoid, ith_layer + 1);
+                        newNode = new Node(TotalNodes[ith_layer + 2][rand.Next(0, TotalNodes[ith_layer + 2].Count)],
+                                                            NodeType.Hidden, ActivationMethod.Sigmoid, ith_layer + 1);
                     } while (ithLayerNodes.Find((x => x.ID == newNode.ID)) != null);
 
                     return newNode;
                 }
-                else //branch 3b
+                else //case 3b
                 {
-                    newNode = new Node(TotalNodesCount, NodeType.Hidden, ActivationMethod.Sigmoid, ith_layer + 1);
-                    TotalNodes[ith_layer].Add(newNode.ID);
+                    var ithLNodes = TotalNodes[ith_layer + 2];
+                    newNode = new Node(ithLNodes[ithLNodes.Count - 1] + 1, NodeType.Hidden, ActivationMethod.Sigmoid, ith_layer + 1);
+                    TotalNodes[ith_layer + 2].Add(newNode.ID);
                     return newNode;
                 }
             }
@@ -168,12 +184,14 @@ namespace MazeRunner.Classes
             {
                 InputNodes.Add(k);
             }
+            TotalNodes.Add(InputNodes);
 
             List<int> OutputNodes = new List<int>();
             for (; k < MapMatrix.GetLength(0) * MapMatrix.GetLength(1) + output; k++)
             {
                 OutputNodes.Add(k);
             }
+            TotalNodes.Add(OutputNodes);
         }               
 
         private void Selection()
@@ -189,6 +207,8 @@ namespace MazeRunner.Classes
                 }
             }
 
+
+            Population.Sort();
             if (Population.Count > Pop_Size)
             {
                 Population.RemoveRange(Pop_Size, Population.Count - Pop_Size);

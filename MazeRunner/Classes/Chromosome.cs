@@ -208,7 +208,7 @@ namespace MazeRunner.Classes
                         //{
                         //    ConnectionGenes[i].isEnable = false;
                         //}
-                        if (ConnectionGenes[i].To.Type !=  NodeType.Output)
+                        if (ConnectionGenes[i].To.Type ==  NodeType.Output)
                         {
                             ConnectionGenes[i].isEnable = false;
 
@@ -281,7 +281,7 @@ namespace MazeRunner.Classes
             }
             else
             {
-                LargestLayer = (NodeGenes.Max(x => x.Level) - Input_Output_Count) / 10;
+                LargestLayer = NodeGenes.Max(x => x.Level);
             }
 
             foreach (var output in OutputNodes)
@@ -317,6 +317,11 @@ namespace MazeRunner.Classes
                 {
                     cnn.Forward();
                 }
+            }
+
+            for (int i = Input_Output_Count; i < NodeGenes.Count; i++)
+            {
+                NodeGenes[i].Value = 0;
             }
         }     
 
@@ -445,7 +450,7 @@ namespace MazeRunner.Classes
                 int Movement = Run(Map);
                 if (!isValidMove(Movement, Map, ref CharPos))
                 {
-                    break;
+                    //break;
                 }
                 Steps++;
 
@@ -474,11 +479,11 @@ namespace MazeRunner.Classes
             }
 
             Elapsed = DateTime.Now - Start;
-            double kq = 60 - Elapsed.TotalSeconds;
+            double kq = Elapsed.TotalSeconds;
             double hs = Win == true ? 2 : 0.5;
             if (kq > 0)
             {
-                kq = (kq + 10 / Steps) * hs;
+                kq = (kq + Steps) * hs;
             }
             Fitness = kq;
         }

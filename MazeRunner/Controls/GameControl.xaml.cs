@@ -42,7 +42,7 @@ namespace MazeRunner.Controls
 
         public void SetSuggestNE_Config(GameControl gc)
         {
-            gc.tbPopSize.Text = "500";
+            gc.tbPopSize.Text = "100";
             gc.tbPopSize.IsEnabled = true;
             gc.tbGens.Text = "1000";
             gc.tbGens.IsEnabled = true;
@@ -54,7 +54,7 @@ namespace MazeRunner.Controls
             gc.tbPointProb.IsEnabled = true;
             gc.tbLinkProb.Text = "0.4";
             gc.tbLinkProb.IsEnabled = true;
-            gc.tbNodeProb.Text = "0.1";
+            gc.tbNodeProb.Text = "0.3";
             gc.tbNodeProb.IsEnabled = true;
             gc.tbEDProb.Text = "0.3";
             gc.tbEDProb.IsEnabled = true;

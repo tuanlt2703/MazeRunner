@@ -12,9 +12,9 @@ namespace MazeRunner.Classes
         public List<Chromosome> Natives;
         public double TotalFitness;
 
-        private static readonly double DeltaDisjoint = 2.0;
-        private static readonly double DeltaWeights = 0.4;
-        private static readonly double DeltaThreshold = 1.0;
+        private static readonly double DeltaDisjoint = 2;
+        private static readonly double DeltaWeights = 1;
+        private static readonly double DeltaThreshold = 1;
 
         #region Constructors
         public Species()
@@ -105,10 +105,16 @@ namespace MazeRunner.Classes
             Natives.Sort();
 
             //because there will be a lot of species existing, we need to keep only the best (or somes) individual in each species 
-            if (Natives.Count > 5)
+            if (Natives.Count > 6)
             {
-                Natives.RemoveRange(5, Natives.Count - 5);
-            }            
+                Natives.RemoveRange(6, Natives.Count - 6);
+            }
+
+            TotalFitness = 0;
+            foreach (var chrome in Natives)
+            {
+                TotalFitness += chrome.Fitness;
+            }
         }
 
         private Chromosome CrossOver(Chromosome p1, Chromosome p2)
