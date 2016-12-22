@@ -43,11 +43,13 @@ namespace MazeRunner.Controls
         #region A*
         static double h(ref Position k, Position m)
         {
-            return Math.Max(Math.Abs(k.X - m.X), Math.Abs(k.Y - m.Y));
+            return k.h=Math.Max(Math.Abs(k.X - m.X), Math.Abs(k.Y - m.Y));
         }
         static double h(ref Position runner, Position goal,Position chaser)
         {
-            return runner.h= Math.Max(Math.Abs(runner.X - goal.X), Math.Abs(runner.Y - goal.Y))- Math.Max(Math.Abs(runner.X - chaser.X), Math.Abs(runner.Y - chaser.Y));
+            double d = Math.Max(Math.Abs(runner.X - chaser.X), Math.Abs(runner.Y - chaser.Y));
+            if (d < 10 && d > 0) d = (10 - d)*d;
+            return runner.h= Math.Max(Math.Abs(runner.X - goal.X), Math.Abs(runner.Y - goal.Y))-d;
         }
         private static List<Position> runAstar(int[,] emuMap)
         {
@@ -174,34 +176,10 @@ namespace MazeRunner.Controls
             else
                 return null;
         }
-        private static List<Position> runAstar(int[,] emuMap,bool runner)
+        private static List<Position> runAstar(int[,] emuMap,Position emuRunner,Position emuChaser,Position goal)
         {
             int i, j, next = 0, r, n, m, dem1, dem2, co = -1, cc = -1, ci;//co mean checkopen cc mean checkclose
-            Position emuRunner = new Position();
-            Position emuChaser = new Position();
-            Position goal = new Position();
-            for (i = 0; i < emuMap.GetLength(0); i++)
-            {
-                for (j = 0; j < emuMap.GetLength(1); j++)
-                {
-                    if (emuMap[i, j] == 2) //2 runner 3  goal 4 chaser;
-                    {
-                        emuRunner.X = i;
-                        emuRunner.Y = j;
-                    }
-                    if (emuMap[i, j] == 3)
-                    {
-                        goal.X = i;
-                        goal.Y = j;
-                    }
-                    if (emuMap[i, j] == 4) 
-                    {
-                        emuChaser.X = i;
-                        emuChaser.Y = j;
-                    }
-
-                }
-            }
+           
             m = emuMap.GetLength(0);
             n = emuMap.GetLength(1);
             bool found = false;
@@ -340,16 +318,43 @@ namespace MazeRunner.Controls
             else
                 return null;
         }
-        public static List<int> Asmove3(int[,] MapMatrix)
+        public static List<int> Asmove3(int[,] emuMap)
         {
+            Position emuRunner = new Position();
+            Position emuChaser = new Position();
+            Position goal = new Position();
+            int i, j;
+            for (i = 0; i < emuMap.GetLength(0); i++)
+            {
+                for (j = 0; j < emuMap.GetLength(1); j++)
+                {
+                    if (emuMap[i, j] == 2) //2 runner 3  goal 4 chaser;
+                    {
+                        emuRunner.X = i;
+                        emuRunner.Y = j;
+                    }
+                    if (emuMap[i, j] == 3)
+                    {
+                        goal.X = i;
+                        goal.Y = j;
+                    }
+                    if (emuMap[i, j] == 4)
+                    {
+                        emuChaser.X = i;
+                        emuChaser.Y = j;
+                    }
+
+                }
+            }
             List<int> kq = new List<int>();
-            List<Position> Path = runAstar(MapMatrix,true);
+            List<Position> Path = runAstar(emuMap, emuRunner, emuChaser, goal);
             if (Path != null && Path.Count != 0)
             {
                 int xt, yt;
                 xt = Path[Path.Count - 1].X;
                 yt = Path[Path.Count - 1].Y;
-
+                xt = emuRunner.X - xt;// this function only for runner to reach goal
+                yt = emuRunner.Y - yt;
                 kq.Add(xt);
                 kq.Add(yt);
                 return kq;
