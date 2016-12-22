@@ -48,8 +48,7 @@ namespace MazeRunner.Controls
         static double h(ref Position runner, Position goal,Position chaser)
         {
             double d = Math.Max(Math.Abs(runner.X - chaser.X), Math.Abs(runner.Y - chaser.Y));
-            if (d < 10 && d > 0) d = (10 - d)*d;
-            return runner.h= Math.Max(Math.Abs(runner.X - goal.X), Math.Abs(runner.Y - goal.Y))-d;
+            return runner.h= Math.Max(Math.Abs(runner.X - goal.X), Math.Abs(runner.Y - goal.Y))-0.3*d;
         }
         private static List<Position> runAstar(int[,] emuMap)
         {
