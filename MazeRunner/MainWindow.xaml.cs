@@ -58,9 +58,16 @@ namespace MazeRunner
             Map.StartChaserTurn();
         }
 
-        public void EndChaserTurn()
+        public void EndChaserTurn(bool isBot = false)
         {
-            ChaserTurn = false;
+            if (!isBot)
+            {
+                ChaserTurn = false;
+            }
+            //else
+            //{
+            //    this.Map.StartBotRunnerMove();
+            //}
         }
 
         public void EndStage(bool win = true)

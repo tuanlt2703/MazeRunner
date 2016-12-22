@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MazeRunner.Controls;
 
 namespace MazeRunner.Classes
 {
@@ -27,6 +25,8 @@ namespace MazeRunner.Classes
         private Chromosome Best;
         private int Pop_Size;
         private int Generations;
+
+        private Network ANN;
 
         public static double CrossOver_Prob;
         public static double Mutate_Prob;
@@ -235,31 +235,258 @@ namespace MazeRunner.Classes
             }
         }
 
-        public void Execute(int[,] MapMatrix, MazeRunner.Controls.GameControl gc)
+        #region ANN
+        private int[,] CloneMap(int[,] MapMatrix, ref MazeRunner.Controls.CharacterPos CharPos)
         {
-            Population.Clear();
-
-            //Init population
-            CreatePopulation(MapMatrix);
-            Selection();
-
-            for (CurrentGen = 0; CurrentGen < Generations; CurrentGen++)
+            int[,] tmp = new int[MapMatrix.GetLength(0), MapMatrix.GetLength(1)];
+            for (int i = 0; i < MapMatrix.GetLength(0); i++)
             {
-                //CrossOver - Mutate
-                Breed(MapMatrix);
-                Mutate(MapMatrix);
+                for (int j = 0; j < MapMatrix.GetLength(1); j++)
+                {
+                    tmp[i, j] = MapMatrix[i, j];
+                    if (tmp[i, j] == (int)MazeRunner.Controls.Cell.Runner)
+                    {
+                        CharPos.RunnerX = i;
+                        CharPos.RunnerY = j;
+                    }
+                    else if (tmp[i, j] == (int)MazeRunner.Controls.Cell.Chaser)
+                    {
+                        CharPos.ChaserX = i;
+                        CharPos.ChaserY = j;
+                    }
+                }
+            }
+            return tmp;
+        }
 
-                Selection();
-
-                //
-                MazeRunner.Controls.GameControl.Process pc = new Controls.GameControl.Process(gc.ShowProcess);
-                gc.Dispatcher.Invoke(pc, new object[] { Best, CurrentGen });
+        private void RunnerMove(List<int> Movement, int[,] Map, ref CharacterPos CharPos)
+        {
+            int move = 0;
+            if (Movement[1] == 0 && Movement[0]== 0)
+            {
+                move = 0; //Down
+            }
+            else if (Movement[1] == 0 && Movement[0] == 1)
+            {
+                move = 1; //Up
+            }
+            else if (Movement[1] == 1 && Movement[0] == 0)
+            {
+                move = 2; //Right
+            }
+            else if (Movement[1] == 1 && Movement[0] == 1)
+            {
+                move = 3; //Left
             }
 
-            //finished
-            isFinished = true;
-            MazeRunner.Controls.GameControl.Finished fin = new Controls.GameControl.Finished(gc.SaveTrainedGA);
-            gc.Dispatcher.Invoke(fin);
+
+            if (move == 0) //Down
+            {
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Moveable;
+                CharPos.RunnerX += 1;
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Runner;
+            }
+            else if (move == 1) //Up
+            {
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Moveable;
+                CharPos.RunnerX -= 1;
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Runner;
+            }
+            else if (move == 2) //Right
+            {
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Moveable;
+                CharPos.RunnerY += 1;
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Runner;
+            }
+            else if (move == 3) //Left
+            {
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Moveable;
+                CharPos.RunnerY -= 1;
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Runner;
+            }
+        }
+
+        private void RunnerMove(double[] Movement, int[,] Map, ref CharacterPos CharPos)
+        {
+            int move = 0;
+            if (Movement[1] == 0 && Movement[0] == 0)
+            {
+                move = 0; //Down
+            }
+            else if (Movement[1] == 0 && Movement[0] == 1)
+            {
+                move = 1; //Up
+            }
+            else if (Movement[1] == 1 && Movement[0] == 0)
+            {
+                move = 2; //Right
+            }
+            else if (Movement[1] == 1 && Movement[0] == 1)
+            {
+                move = 3; //Left
+            }
+
+
+            if (move == 0) //Down
+            {
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Moveable;
+                CharPos.RunnerX += 1;
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Runner;
+            }
+            else if (move == 1) //Up
+            {
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Moveable;
+                CharPos.RunnerX -= 1;
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Runner;
+            }
+            else if (move == 2) //Right
+            {
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Moveable;
+                CharPos.RunnerY += 1;
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Runner;
+            }
+            else if (move == 3) //Left
+            {
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Moveable;
+                CharPos.RunnerY -= 1;
+                Map[CharPos.RunnerX, CharPos.RunnerY] = (int)Cell.Runner;
+            }
+        }
+
+        private void ChaserMove(int[,] Map, ref CharacterPos CharPos)
+        {
+            //chaser's turn
+            var chase = Chaser.Asmove2(Map);
+            Map[CharPos.ChaserX, CharPos.ChaserY] = (int)Cell.Moveable;
+            CharPos.ChaserX = chase[0];
+            CharPos.ChaserY = chase[1];
+            Map[CharPos.ChaserX, CharPos.ChaserY] = (int)Cell.Chaser;
+        }
+
+        private bool? isWon(int[,] Map, CharacterPos CharPos)
+        {
+            if (CharPos.GotCaught)
+            {
+                return false;
+            }
+
+            if (Map[CharPos.RunnerX, CharPos.RunnerY] == (int)Cell.Goal)
+            {
+                return true;
+            }
+
+            return null;
+        }
+
+        private bool TrainedSuccessful(int[,] MapMatrix, int last_steps)
+        {
+            CharacterPos CharPos = new CharacterPos();
+            int[,] Map = CloneMap(MapMatrix, ref CharPos);
+
+            for (int i = 0; i < last_steps; i++)
+            {
+                var Movement = ANN.Run(Map);
+                RunnerMove(Movement, Map, ref CharPos);
+                ChaserMove(Map, ref CharPos);
+
+                var result = isWon(Map, CharPos);
+                if (result == true)
+                {
+                    return true;
+                }
+                else if (result == false)
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        private void STL(int[,] MapMatrix, GameControl gc)
+        {
+            //config ANN with: 
+            //1 input layer: <input> nodes
+            //1 output layer: <output> nodes
+            //tmp.Count hidden layer: each nodes_count in each layer is in tmp
+            List<int> tmp = new List<int>() { 5 };
+            int input = MapMatrix.GetLength(0) * MapMatrix.GetLength(1);
+            int output = 2;
+            ANN = new Network(input, output, tmp.Count, tmp);
+
+            CharacterPos CharPos = new CharacterPos();
+            int[,] Map = CloneMap(MapMatrix, ref CharPos);
+
+            var trainingset = new NeuronDotNet.Core.TrainingSet(input, output);
+            int trainedtmp = 0;
+
+            while (true)
+            {
+                int i = 0;
+
+                List<int> Movement = Chaser.Asmove3(Map);
+                ANN.Learn(Map, Movement);
+                RunnerMove(Movement, Map, ref CharPos);
+                ChaserMove(Map, ref CharPos);
+
+                i++;
+
+                trainedtmp++;
+                GameControl.Process pc = new GameControl.Process(gc.ShowProcess);
+                gc.Dispatcher.Invoke(pc, new object[] { i });
+
+                var result = isWon(Map, CharPos);
+                if (result != null) //lose or win
+                {
+                    if (result == false) //lose
+                    {
+                        System.Windows.MessageBox.Show("failed");
+                    }
+                    else if (result == true) //won
+                    {
+                        //do sth...
+                        if (TrainedSuccessful(MapMatrix, i))
+                        {
+                            System.Windows.MessageBox.Show("succeeded");
+                            break;
+                        }
+                        else //A* ran succeeded, but neural hasn't learned yet.
+                        {
+                            Map = CloneMap(MapMatrix, ref CharPos);
+                        }
+                    }
+                }
+
+            }
+        }
+        #endregion
+
+        public void Execute(int[,] MapMatrix, GameControl gc)
+        {
+            STL(MapMatrix, gc);
+            //Population.Clear();
+
+            ////Init population
+            //CreatePopulation(MapMatrix);
+            //Selection();
+
+            //for (CurrentGen = 0; CurrentGen < Generations; CurrentGen++)
+            //{
+            //    //CrossOver - Mutate
+            //    Breed(MapMatrix);
+            //    Mutate(MapMatrix);
+
+            //    Selection();
+
+            //    //
+            //    MazeRunner.Controls.GameControl.Process pc = new Controls.GameControl.Process(gc.ShowProcess);
+            //    gc.Dispatcher.Invoke(pc, new object[] { Best, CurrentGen });
+            //}
+
+            ////finished
+            //isFinished = true;
+            //MazeRunner.Controls.GameControl.Finished fin = new Controls.GameControl.Finished(gc.SaveTrainedGA);
+            //gc.Dispatcher.Invoke(fin);
         }
         #endregion
     }

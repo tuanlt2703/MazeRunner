@@ -444,7 +444,7 @@ namespace MazeRunner.Controls
             //begin animation
             isMoving = true;
             sb.Begin(runner, true);
-        }
+        }        
 
         public void MoveUp()
         {
@@ -526,13 +526,13 @@ namespace MazeRunner.Controls
             //initializing Last is avoidable, for its earlier's success
             Last.ChaserX = chaser.x;
             Last.ChaserY = chaser.y;
-            MapMatrix[Last.RunnerX, Last.RunnerY] = 0;
-            MapMatrix[runner.x, runner.y] = 2;
+            MapMatrix[Last.RunnerX, Last.RunnerY] = (int)Cell.Moveable;
+            MapMatrix[runner.x, runner.y] = (int)Cell.Runner;
 
             chaser.Asmove(MapMatrix);
 
-            MapMatrix[Last.ChaserX, Last.ChaserY] = 0;
-            MapMatrix[chaser.x, chaser.y] = 4;
+            MapMatrix[Last.ChaserX, Last.ChaserY] = (int)Cell.Moveable;
+            MapMatrix[chaser.x, chaser.y] = (int)Cell.Chaser;
 
             StartChaserAnimation();
         }
@@ -554,6 +554,39 @@ namespace MazeRunner.Controls
         #endregion
         #endregion
 
+        bool isBot = false;
+        public void StartBotRunnerMove()
+        {
+            isBot = true;
+            //Movement[1] = 0; Movement[0] = 0 => Down
+            //Movement[1] = 0; Movement[0] = 1 => Up
+            //Movement[1] = 1; Movement[0] = 0 => Right
+            //Movement[1] = 1; Movement[0] = 1 => Left
+
+            //Get movement from A*
+            List<int> Movement = Chaser.Asmove3(MapMatrix);
+            //Bởi vì hàm Asmove3 của m trả về 0 -1 nên t set cứng 1 số trước để test
+            Movement[0] = 0;
+            Movement[1] = 0;
+
+            if (Movement[1] == 0 && Movement[0] == 0)
+            {
+                MoveDown();
+            }
+            else if (Movement[1] == 0 && Movement[0] == 1)
+            {
+                MoveUp();
+            }
+            else if (Movement[1] == 1 && Movement[0] == 0)
+            {
+                MoveRight();
+            }
+            else if (Movement[1] == 1 && Movement[0] == 1)
+            {
+                MoveLeft();
+            }
+        }
+
         #region Events
         private void Runner_ta_Completed(object sender, EventArgs e)
         {
@@ -572,7 +605,7 @@ namespace MazeRunner.Controls
             //Chaser_sb.Stop();
             if (!CheckGoal())
             {
-                Main.EndChaserTurn();
+                Main.EndChaserTurn(isBot);
             }
 
             //store last movement into list

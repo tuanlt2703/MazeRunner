@@ -342,5 +342,11 @@ namespace MazeRunner.Controls
             #endregion
         }
         #endregion
+
+        private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            StartGame();
+            Main.Map.StartBotRunnerMove();
+        }
     }
 }
