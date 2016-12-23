@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MazeRunner.Controls"
              mc:Ignorable="d" Height="715" Width="111">
     <Grid>
-        <TextBlock Text="Stage: " FontSize="17" HorizontalAlignment="Left" Margin="14,13,0,0"  VerticalAlignment="Top">
+        <TextBlock Text="Stage: " MouseLeftButtonUp="TextBlock_MouseLeftButtonUp" FontSize="17" HorizontalAlignment="Left" Margin="14,13,0,0"  VerticalAlignment="Top">
             <TextBlock.Style>
                 <Style TargetType="{x:Type TextBlock}">
                     <Style.Triggers>

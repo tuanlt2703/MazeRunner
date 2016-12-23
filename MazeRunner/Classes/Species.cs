@@ -6,32 +6,41 @@ using System.Threading.Tasks;
 
 namespace MazeRunner.Classes
 {
-    public class Species
+    //a collection of chromosome
+    public class Species : IComparable<Species>
     {
-        private static readonly double DeltaDisjoint = 2.0;
-        private static readonly double DeltaWeights = 0.4;
-        private static readonly double DeltaThreshold = 1.0;
+        public List<Chromosome> Natives;
+        public double TotalFitness;
 
-        public List<Chromosome> Individuals;
+        private static readonly double DeltaDisjoint = 2;
+        private static readonly double DeltaWeights = 1;
+        private static readonly double DeltaThreshold = 1;
 
         #region Constructors
         public Species()
         {
-            this.Individuals = new List<Chromosome>();
+            this.Natives = new List<Chromosome>();
+            this.TotalFitness = 0;
         }
         #endregion
 
+
         #region Methods
+        public int CompareTo(Species other)
+        {
+            return other.TotalFitness.CompareTo(TotalFitness);
+        }
+
         private double cacl_Disjoint(Chromosome child)
         {
             List<int> list1 = new List<int>();
-            foreach (var connection in child.ConnectionGens)
+            foreach (var connection in child.ConnectionGenes)
             {
                 list1.Add(connection.Innovation);
             }
 
             List<int> list2 = new List<int>();
-            foreach (var connection in Individuals[0].ConnectionGens)
+            foreach (var connection in Natives[0].ConnectionGenes)
             {
                 list2.Add(connection.Innovation);
             }
@@ -52,7 +61,7 @@ namespace MazeRunner.Classes
                 }
             }
 
-            return Species.DeltaDisjoint * (disjointGenes / Math.Max(child.ConnectionGens.Count, Individuals[0].ConnectionGens.Count));
+            return Species.DeltaDisjoint * (disjointGenes / Math.Max(child.ConnectionGenes.Count, Natives[0].ConnectionGenes.Count));
         }
 
         private double cacl_Weights(Chromosome child)
@@ -60,14 +69,14 @@ namespace MazeRunner.Classes
             double sum = 0;
             int matchingGenes = 0;
 
-            var connections = Individuals[0].ConnectionGens;
-            for (int i = 0; i < child.ConnectionGens.Count; i++)
+            var connections = Natives[0].ConnectionGenes;
+            for (int i = 0; i < child.ConnectionGenes.Count; i++)
             {
-                var gene = connections.Find((x => x.Innovation == child.ConnectionGens[i].Innovation));
-                if (gene != null)
+                var gene = connections.Find((x => x.Innovation == child.ConnectionGenes[i].Innovation));
+                if (gene != null) //match gen found
                 {
                     matchingGenes++;
-                    sum += Math.Abs(gene.Weight - child.ConnectionGens[i].Weight);
+                    sum += Math.Abs(gene.Weight - child.ConnectionGenes[i].Weight);
                 }
             }
 
@@ -76,15 +85,15 @@ namespace MazeRunner.Classes
 
         public bool addNewChild(Chromosome child)
         {
-            if (Individuals.Count == 0)
+            if (Natives.Count == 0)
             {
-                Individuals.Add(child);
+                Natives.Add(child);
                 return true;
             }
 
             if ((cacl_Disjoint(child) + cacl_Weights(child)) < Species.DeltaThreshold)
             {
-                Individuals.Add(child);
+                Natives.Add(child);
                 return true;
             }
 
@@ -93,12 +102,18 @@ namespace MazeRunner.Classes
 
         public void Selection()
         {
-            Individuals.Sort();
-            Individuals.Reverse();
+            Natives.Sort();
 
-            if (Individuals.Count > 10)
+            //because there will be a lot of species existing, we need to keep only the best (or somes) individual in each species 
+            if (Natives.Count > 6)
             {
-                Individuals.RemoveRange(Individuals.Count / 2, Individuals.Count / 2 - 1);
+                Natives.RemoveRange(6, Natives.Count - 6);
+            }
+
+            TotalFitness = 0;
+            foreach (var chrome in Natives)
+            {
+                TotalFitness += chrome.Fitness;
             }
         }
 
@@ -111,29 +126,37 @@ namespace MazeRunner.Classes
                 p1 = tmp;
             }
 
-            //cx 2 chromosome
-            Chromosome child = new Chromosome(new List<Node>(p1.OutputNodes.Select(x => (Node)x.Clone()).ToList()));
-            //copy all input node from p1 to child
-            child.InputNodes = p1.InputNodes;
-            for (int i = 0; i < p1.InputNodes; i++)
-            {
-                child.Nodes.Add((Node)p1.Nodes[i].Clone());
-            }
+            //copy all genes(nodes and connections) from p1 to child
+            Chromosome child = p1.Clone();
 
-            //cross over connections
-            ////copy all connections from p1 (both match and mismatch(disjoint) genes)
-            for (int i = 0; i < p1.ConnectionGens.Count; i++)
+            //copy all mismatch genes(nodes and connections) from p2 to child
+            foreach (var connection in p2.ConnectionGenes)
             {
-                child.AddConnection((ConnectionNode)p1.ConnectionGens[i].Clone());
-                
-            }
-            ////copy all disjoint genes from p2
-            for (int i = 0; i < p2.ConnectionGens.Count; i++)
-            {
-                var gene = p1.ConnectionGens.Find((x => x.Innovation == p2.ConnectionGens[i].Innovation));
-                if (gene == null) //disjoint gene found
+                Node cnn_from = connection.From;
+                Node cnn_to = connection.To;
+                ConnectionNode cnn = new ConnectionNode(cnn_from, cnn_to);
+
+                cnn = child.ConnectionGenes.Find((x => x.From.ID == cnn_from.ID && x.To.ID == cnn_to.ID));
+                if (cnn == null) //mismatch connection-gene found
                 {
-                    child.AddConnection((ConnectionNode)p2.ConnectionGens[i].Clone());
+                    //check if from/to node exist in child
+                    Node from_tmp = child.NodeGenes.Find((x => x.ID == cnn_from.ID));
+                    if (from_tmp == null)
+                    {
+                        from_tmp = cnn_from.Clone();
+                        child.NodeGenes.Add(from_tmp);
+                    }
+
+                    Node to_tmp = child.NodeGenes.Find((x => x.ID == cnn_to.ID));
+                    if (to_tmp == null)
+                    {
+                        to_tmp = cnn_to.Clone();
+                        child.NodeGenes.Add(to_tmp);
+                    }
+
+                    ConnectionNode tmp = new ConnectionNode(from_tmp, to_tmp, connection.Weight, connection.Innovation, connection.isEnable);
+                    //neat.CheckNewConnection(tmp); //copy from p2
+                    child.ConnectionGenes.Add(tmp);
                 }
             }
 
@@ -151,41 +174,45 @@ namespace MazeRunner.Classes
             return Childs;
         }
 
-        public List<Chromosome> Breed(Random r)
+        public List<Chromosome> Breed()
         {
             List<Chromosome> childs;
+
+            //Select parents to breed
+            Random rand = new Random(System.DateTime.Now.Millisecond);
             List<Chromosome> parents = new List<Chromosome>();
-            if (Individuals.Count >= 2)
+            if (Natives.Count >= 2)
             {
-                parents.Add(Individuals[0]);
-                parents.Add(Individuals[1]);
-                for (int i = 2; i < Individuals.Count; i++)
+                parents.Add(Natives[0]);
+                parents.Add(Natives[1]);
+
+                for (int i = 2; i < Natives.Count; i++)
                 {
-                    if (r.NextDouble() < NEAT.CrossOver_Prob)
+                    if (rand.NextDouble() < NEAT.CrossOver_Prob)
                     {
-                        parents.Add(Individuals[i]);
+                        parents.Add(Natives[i]);
                     }
                 }
-                if (parents.Count % 2 == 1) 
+                if (parents.Count % 2 == 1)
                 {
-                    parents.Add(Individuals[r.Next(0, Individuals.Count)]);
+                    parents.Add(Natives[rand.Next(0, Natives.Count)]);
                 }
                 childs = CrossOver(parents);
             }
             else
             {
                 childs = new List<Chromosome>();
-                childs.Add((Chromosome)Individuals[r.Next(0, Individuals.Count)].Clone());
+                childs.Add(Natives[rand.Next(0, Natives.Count)].Clone());
             }
             return childs;
         }
 
-        public void Mutate(Random r, int[,] Map, NEAT neat)
+        public void Mutate(int[,] Map, NEAT neat)
         {
-            for (int i = 1; i < Individuals.Count; i++)
+            foreach (var gene in Natives)
             {
-                Individuals[i].Mutate(r, neat);
-                Individuals[i].Evaluate(Map);
+                gene.Mutate(neat);
+                gene.Evaluate(Map);
             }
         }
         #endregion

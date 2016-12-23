@@ -8,6 +8,7 @@ using MazeRunner.Classes;
 using System.Windows.Input;
 using System.Threading;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
 
 namespace MazeRunner.Controls
 {
@@ -15,7 +16,7 @@ namespace MazeRunner.Controls
     {
         public int Rows, Cols;
         public string Size { get; set; }
-        double MaxObs;
+        public double MaxObs;
         public int NumberOfObsstacles
         {
             get
@@ -24,8 +25,11 @@ namespace MazeRunner.Controls
             }
         }
 
+        public static Difficultity VeryEasy = new Difficultity()
+        { Rows = 3, Cols = 3, MaxObs = 0.2, Size = "VEasy 3x3" };
+
         public static Difficultity Easy = new Difficultity()
-        { Rows = 6, Cols = 6, MaxObs = 0.15, Size = "Easy 6x6" };
+        { Rows = 6, Cols = 6, MaxObs = 0.2, Size = "Easy 6x6" };
 
         public static Difficultity Normal = new Difficultity()
         { Rows = 8, Cols = 8, MaxObs = 0.2, Size = "Normal 8x8" };
@@ -38,19 +42,19 @@ namespace MazeRunner.Controls
 
         public void SetSuggestNE_Config(GameControl gc)
         {
-            gc.tbPopSize.Text = "500";
+            gc.tbPopSize.Text = "100";
             gc.tbPopSize.IsEnabled = true;
             gc.tbGens.Text = "1000";
             gc.tbGens.IsEnabled = true;
             gc.tbCXProb.Text = "0.7";
             gc.tbCXProb.IsEnabled = true;
             gc.tbMuProb.Text = "0.5";
-            gc.tbMuProb.IsEnabled = true;
+            gc.tbMuProb.IsEnabled = false;
             gc.tbPointProb.Text = "0.5";
             gc.tbPointProb.IsEnabled = true;
             gc.tbLinkProb.Text = "0.4";
             gc.tbLinkProb.IsEnabled = true;
-            gc.tbNodeProb.Text = "0.5";
+            gc.tbNodeProb.Text = "0.3";
             gc.tbNodeProb.IsEnabled = true;
             gc.tbEDProb.Text = "0.3";
             gc.tbEDProb.IsEnabled = true;
@@ -78,7 +82,6 @@ namespace MazeRunner.Controls
         private DateTime TimerStart;
         private int CurrentStageID = -1;
         private List<Difficultity> MapSize;
-        private List<TextBox> HiddenLayers;
 
         private NEAT bot;
         private Thread th;
@@ -94,7 +97,6 @@ namespace MazeRunner.Controls
 
             LoadStageList();
             LoadMaSizepList();
-            HiddenLayers = new List<TextBox>();
         }
 
         #region Methods
@@ -130,6 +132,7 @@ namespace MazeRunner.Controls
         private void LoadMaSizepList()
         {
             MapSize = new List<Difficultity>();
+            MapSize.Add(Difficultity.VeryEasy);
             MapSize.Add(Difficultity.Easy);
             MapSize.Add(Difficultity.Normal);
             MapSize.Add(Difficultity.Hard);
@@ -150,33 +153,7 @@ namespace MazeRunner.Controls
         public void EndGame()
         {
             Timer.Stop();
-        }        
-
-        private List<int> getHiddenLayers()
-        {
-            List<int> tmp = new List<int>();
-            foreach (var tb in HiddenLayers)
-            {
-                tmp.Add(Int32.Parse(tb.Text));
-            }
-            return tmp;
-        }
-
-        private void LoadLastGA_Config()
-        {
-            //tbPopSize.Text = bot.Pop_Size.ToString();
-            //tbGens.Text = bot.Generations.ToString();
-            //tbCXProb.Text = bot.CrossOver_Prob.ToString();
-            //tbMuProb.Text = bot.Mutate_Prob.ToString();
-            //tbTopProb.Text = bot.TopologyMuate_Prob.ToString();
-            //tbLayers.Text = (bot.HLayers.Count - 2).ToString();
-
-            //int i = 1;
-            //foreach (var tb in HiddenLayers)
-            //{
-            //    tb.Text = bot.HLayers[i++].ToString();
-            //}
-        }
+        }                
         #endregion
 
         #region Events
@@ -301,19 +278,19 @@ namespace MazeRunner.Controls
                 btnUndo.IsEnabled = false;
             }
         }
-        
+
         private void btnTrain_Click(object sender, RoutedEventArgs e)
         {
+            #region old
             if (!Started)
             {
                 if (bot == null)
                 {
                     bot = new NEAT(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text), Double.Parse(tbCXProb.Text),
-                        Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text), 
+                    Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text),
                         Double.Parse(tbNodeProb.Text), Double.Parse(tbEDProb.Text));
 
-                    var HLayers = getHiddenLayers();
-                    th = new Thread(() => bot.Excute(Main.Map.MapMatrix, this));
+                    th = new Thread(() => bot.Execute(Main.Map.MapMatrix, this));
                     th.Start();
 
                     btnTrain.Content = "Training...";
@@ -362,7 +339,14 @@ namespace MazeRunner.Controls
                     btnStartBot.IsEnabled = true;
                 }
             }
+            #endregion
         }
         #endregion
+
+        private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            StartGame();
+            Main.Map.StartBotRunnerMove();
+        }
     }
 }
