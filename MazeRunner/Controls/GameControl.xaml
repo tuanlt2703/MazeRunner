@@ -72,13 +72,10 @@
         	Width="42" HorizontalAlignment="Left" Margin="61,544,0,0"  VerticalAlignment="Top"/>
         
         <Button x:Name="btnTrain" IsEnabled="False" Width="95" Content="Start Training" FontSize="15" HorizontalAlignment="Left" Margin="8,578,0,0" VerticalAlignment="Top" Click="btnTrain_Click"/>
-        <Button x:Name="btnStartBot" IsEnabled="False" Content="N-E Start" FontSize="15" HorizontalAlignment="Left" Margin="22,647,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnStartBot" Click="btnStartBot_Click" IsEnabled="False" Content="N-E Start" FontSize="15" HorizontalAlignment="Left" Margin="28,646,0,0" VerticalAlignment="Top"/>
 
         <TextBlock Text="Gens:" HorizontalAlignment="Left" Margin="8,606,0,0"  VerticalAlignment="Top"/>
         <TextBox x:Name="tbCurGens" IsReadOnly="True" Background="Transparent" FontSize="10" VerticalContentAlignment="Center"
         	HorizontalAlignment="Left" Margin="37,607,0,0"  VerticalAlignment="Top" Width="35"/>
-        <TextBlock Text="Best:" HorizontalAlignment="Left" Margin="11,627,0,0"  VerticalAlignment="Top"/>
-        <TextBox x:Name="tbBestCh" IsReadOnly="True" Background="Transparent" FontSize="10" VerticalContentAlignment="Center"
-        	HorizontalAlignment="Left" Margin="37,627,0,0"  VerticalAlignment="Top"/>        
     </Grid>
 </UserControl>

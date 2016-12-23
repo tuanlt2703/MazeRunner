@@ -84,6 +84,8 @@ namespace MazeRunner.Controls
         private List<Difficultity> MapSize;
 
         private NEAT bot;
+        private Network net;
+
         private Thread th;
         private bool Started = false;
 
@@ -100,21 +102,21 @@ namespace MazeRunner.Controls
         }
 
         #region Methods
-        public delegate void Process(Chromosome Best, int i);
-        public void ShowProcess(Chromosome Best, int i)
+        public delegate void Process(int i);
+        public void ShowProcess(int i)
         {
             tbCurGens.Text = (i + 1).ToString();
-            tbBestCh.Text = Best.Fitness.ToString();
         }
 
-        public delegate void Finished();
-        public void SaveTrainedGA()
+        public delegate void Finished(Network net);
+        public void SaveTrainedGA(Network net)
         {
-            //using (Stream stream = File.Open("TrainedGA.bin", FileMode.Create))
-            //{
-            //    BinaryFormatter bin = new BinaryFormatter();
-            //    bin.Serialize(stream, bot);
-            //}
+            int lvl = cmbStages.SelectedIndex;
+            using (Stream stream = File.Open("TrainedGA_Map " + lvl.ToString() + ".bin", FileMode.Create))
+            {
+                BinaryFormatter bin = new BinaryFormatter();
+                bin.Serialize(stream, net);
+            }
 
             btnTrain.Content = "Start Training";
             btnStartBot.IsEnabled = true;
@@ -238,27 +240,22 @@ namespace MazeRunner.Controls
                     btnTrain.IsEnabled = true;
                 }
 
-                //try to load previous GA
-                //string path;
-                //if (File.Exists("TrainedGA.bin"))
-                //{
-                //    using (Stream stream = File.Open("TrainedGA.bin", FileMode.Open))
-                //    {
-                //        BinaryFormatter bin = new BinaryFormatter();
-                //        bot = (GA)bin.Deserialize(stream);
-                //    }
+                bot = new NEAT(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text), Double.Parse(tbCXProb.Text),
+                    Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text),
+                        Double.Parse(tbNodeProb.Text), Double.Parse(tbEDProb.Text));
 
-                //    LoadLastGA_Config();
-                //}
-                //else if (File.Exists("Stopped GA.bin"))
-                //{
-                //    using (Stream stream = File.Open("Stopped GA.bin", FileMode.Open))
-                //    {
-                //        BinaryFormatter bin = new BinaryFormatter();
-                //        bot = (GA)bin.Deserialize(stream);
-                //    }
-                //    LoadLastGA_Config();
-                //}
+                //try to load previous GA
+                string path = "TrainedGA_Map " + cmbStages.SelectedIndex.ToString() + ".bin";
+                if (File.Exists(path))
+                {
+                    using (Stream stream = File.Open(path, FileMode.Open))
+                    {
+                        BinaryFormatter bin = new BinaryFormatter();
+                        net = (Network)bin.Deserialize(stream);
+                    }
+                    bot.ANN = net;
+                    btnStartBot.IsEnabled = true;
+                }
             }
         }
 
@@ -281,15 +278,10 @@ namespace MazeRunner.Controls
 
         private void btnTrain_Click(object sender, RoutedEventArgs e)
         {
-            #region old
             if (!Started)
             {
-                if (bot == null)
+                if (bot.ANN == null)
                 {
-                    bot = new NEAT(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text), Double.Parse(tbCXProb.Text),
-                    Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text),
-                        Double.Parse(tbNodeProb.Text), Double.Parse(tbEDProb.Text));
-
                     th = new Thread(() => bot.Execute(Main.Map.MapMatrix, this));
                     th.Start();
 
@@ -297,49 +289,38 @@ namespace MazeRunner.Controls
                     Started = true;
                     btnStartBot.IsEnabled = false;
                 }
-                //else if (!bot.isFinished)
-                //{
-                //    if (MessageBox.Show("Countinue previous training?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                //    {
-                //        th = new Thread(() => bot.Continue(Main.Map.MapMatrix, this));
-                //        th.Start();
+                else //network trained
+                {
+                    if (MessageBox.Show("a bot for this map has been already trained, do you want to re-train it from scratch?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                    {
+                        th = new Thread(() => bot.Execute(Main.Map.MapMatrix, this));
+                        th.Start();
 
-                //        btnTrain.Content = "Training...";
-                //        Started = true;
-                //        btnStartBot.IsEnabled = false;
-                //    }
-                //}
-                //else if (MessageBox.Show("GA have been trained, do you want to re-train it?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                //{
-                //    bot = new NEAT(Int32.Parse(tbPopSize.Text), Int32.Parse(tbGens.Text), Double.Parse(tbCXProb.Text),
-                //        Double.Parse(tbMuProb.Text), Double.Parse(tbPointProb.Text), Double.Parse(tbLinkProb.Text),
-                //        Double.Parse(tbNodeProb.Text), Double.Parse(tbEDProb.Text));
-                //    var HLayers = getHiddenLayers();
-                //    th = new Thread(() => bot.Excute(Main.Map.MapMatrix, this));
-                //    th.Start();
-
-                //    btnTrain.Content = "Training...";
-                //    Started = true;
-                //    btnStartBot.IsEnabled = false;
-                //}
+                        btnTrain.Content = "Training...";
+                        Started = true;
+                        btnStartBot.IsEnabled = false;
+                    }
+                }
             }
             else
             {
                 if (MessageBox.Show("Training in process, do you want to save and stop the training?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
                     th.Abort();
-                    //using (Stream stream = File.Open("Stopped GA.bin", FileMode.Create))
-                    //{
-                    //    BinaryFormatter bin = new BinaryFormatter();
-                    //    bin.Serialize(stream, bot);
-                    //}
+
+                    bot.ANN = null; //delete halfway trained network
 
                     Started = false;
                     btnTrain.Content = "Start Training";
                     btnStartBot.IsEnabled = true;
                 }
             }
-            #endregion
+        }
+
+        private void btnStartBot_Click(object sender, RoutedEventArgs e)
+        {
+            double[] Movement = bot.ANN.Run(Main.Map.MapMatrix);
+            Main.Map.NEATMove(Movement);          
         }
         #endregion
 
@@ -347,6 +328,6 @@ namespace MazeRunner.Controls
         {
             StartGame();
             Main.Map.StartBotRunnerMove();
-        }
+        }        
     }
 }

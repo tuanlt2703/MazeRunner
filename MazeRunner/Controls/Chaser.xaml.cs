@@ -43,17 +43,17 @@ namespace MazeRunner.Controls
         #region A*
         static double h(ref Position k, Position m)
         {
-            return k.h=Math.Max(Math.Abs(k.X - m.X), Math.Abs(k.Y - m.Y));
+            return k.h = Math.Max(Math.Abs(k.X - m.X), Math.Abs(k.Y - m.Y));
         }
-        static double h(ref Position runner, Position goal,Position chaser)
+        static double h(ref Position runner, Position goal, Position chaser)
         {
             double d = Math.Max(Math.Abs(runner.X - chaser.X), Math.Abs(runner.Y - chaser.Y));
-            double s =  runner.h = Math.Max(Math.Abs(runner.X - goal.X), Math.Abs(runner.Y - goal.Y)) - d;
-            if (d>10) return s-d;
+            double s = runner.h = Math.Max(Math.Abs(runner.X - goal.X), Math.Abs(runner.Y - goal.Y)) - d;
+            if (d > 10) return s - d;
             if (d < s - 1) return s;
-            if (d < 5) return s-100*d;
+            if (d < 5) return s - 100 * d;
 
-            return runner.h = Math.Max(Math.Abs(runner.X - goal.X), Math.Abs(runner.Y - goal.Y)) - 5*d;
+            return runner.h = Math.Max(Math.Abs(runner.X - goal.X), Math.Abs(runner.Y - goal.Y)) - 5 * d;
         }
         private static List<Position> runAstar(int[,] emuMap)
         {
@@ -82,8 +82,11 @@ namespace MazeRunner.Controls
             m = emuMap.GetLength(0);
             n = emuMap.GetLength(1);
             bool found = false;
-            int[] dx = new int[] { 0, -1, 1, 0 };
-            int[] dy = new int[] { -1, 0, 0, 1 };
+            //int[] dx = new int[] { 0, -1, 1, 0 };
+            //int[] dy = new int[] { -1, 0, 0, 1 };
+
+            int[] dx = new int[] { 0, -1, 1, 0, -1, 1, -1, 1 };
+            int[] dy = new int[] { -1, 0, 0, 1, -1, 1, 1, -1 };
             List<Position> open, close;
             Position temp, temp2;
             open = new List<Position>();
@@ -99,7 +102,7 @@ namespace MazeRunner.Controls
                     found = true;
                     break;
                 };
-                for (r = 0; r < 4; r++)
+                for (r = 0; r < 4; r++)// if( run to 8 chaser can run 8 directions )
                 {
 
                     i = open[next].X + dx[r];
@@ -180,15 +183,16 @@ namespace MazeRunner.Controls
             else
                 return null;
         }
-        private static List<Position> runAstar(int[,] emuMap,Position emuRunner,Position emuChaser,Position goal)
+        private static List<Position> runAstar(int[,] emuMap, Position emuRunner, Position emuChaser, Position goal)
         {
             int i, j, next = 0, r, n, m, dem1, dem2, co = -1, cc = -1, ci;//co mean checkopen cc mean checkclose
-           
+
             m = emuMap.GetLength(0);
             n = emuMap.GetLength(1);
             bool found = false;
             int[] dx = new int[] { 0, -1, 1, 0 };
             int[] dy = new int[] { -1, 0, 0, 1 };
+
             List<Position> open, close;
             Position temp, temp2;
             open = new List<Position>();
@@ -217,7 +221,7 @@ namespace MazeRunner.Controls
                             temp = new Position();
                             temp.X = i;
                             temp.Y = j;
-                            h(ref temp, goal,emuChaser);
+                            h(ref temp, goal, emuChaser);
                             if (co != -1)
                             {
                                 if (open[co].f > temp.f + open[next].g + 1)
@@ -299,7 +303,6 @@ namespace MazeRunner.Controls
                 xt = Path[Path.Count - 1].X;
                 yt = Path[Path.Count - 1].Y;
                 //[0] = up, [1] = down, [2] = left, [3] = right
-
                 this.x = xt;
                 this.y = yt;
             }
@@ -314,7 +317,6 @@ namespace MazeRunner.Controls
                 int xt, yt;
                 xt = Path[Path.Count - 1].X;
                 yt = Path[Path.Count - 1].Y;
-
                 kq.Add(xt);
                 kq.Add(yt);
                 return kq;
@@ -356,12 +358,13 @@ namespace MazeRunner.Controls
             {
                 int xt, yt;
                 int next = Path.Count - 1;
-                if(emuRunner.X == Path[Path.Count - 1].X && emuRunner.Y == Path[Path.Count - 1].Y ) next--;
+                if (emuRunner.X == Path[Path.Count - 1].X && emuRunner.Y == Path[Path.Count - 1].Y) next--;
                 xt = Path[next].X;
                 yt = Path[next].Y;
-                xt -= emuRunner.X ;// this function only for runner to reach goal
-                yt -= emuRunner.Y ;
-                if (xt == -1 && yt == 0) { //up
+                xt -= emuRunner.X;// this function only for runner to reach goal
+                yt -= emuRunner.Y;
+                if (xt == -1 && yt == 0)
+                { //up
                     kq.Add(0);
                     kq.Add(1);
                     return kq;

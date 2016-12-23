@@ -4,16 +4,16 @@
 winexe
 C#
 .cs
-E:\Mazerunner2\MazeRunner\MazeRunner\obj\Debug\
+C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\obj\Debug\
 MazeRunner
 none
 false
 DEBUG;TRACE
-E:\Mazerunner2\MazeRunner\MazeRunner\App.xaml
+C:\Users\Administrator\Documents\Projects\MazeRunner\MazeRunner\App.xaml
 51582677667
 
 131408227085
-151929207396
+15-1044203829
 Controls\Chaser.xaml;Controls\GameControl.xaml;Controls\Map.xaml;Controls\Runner.xaml;MainWindow.xaml;
 
 False

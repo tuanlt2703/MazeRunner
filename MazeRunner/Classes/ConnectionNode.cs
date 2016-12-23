@@ -158,7 +158,7 @@ namespace MazeRunner.Classes
         /// </returns>
         public override double Activate(double input, double previousOutput)
         {
-            return input >= 0 ? 1 : 0;
+            return input >= 0.5 ? 1 : 0;
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace MazeRunner.Classes
 
             int k = 0;
             new NeuronDotNet.Core.Backpropagation.BackpropagationConnector(inputLayer, HDLs[k++]).Initializer = new NeuronDotNet.Core.Initializers.NguyenWidrowFunction();
-            for (; k < number_of_hidden_layers - 1; k++)
+            for (; k < number_of_hidden_layers; k++)
             {
                 new NeuronDotNet.Core.Backpropagation.BackpropagationConnector(HDLs[k - 1], HDLs[k]).Initializer = new NeuronDotNet.Core.Initializers.RandomFunction(0d, 0.3d);
             }
@@ -248,7 +248,7 @@ namespace MazeRunner.Classes
             {
                 for (int j = 0; j < Input.GetLength(1); j++)
                 {
-                    _input[k] = Input[i, j];
+                    _input[k++] = Input[i, j];
                 }
             }
 
@@ -274,7 +274,7 @@ namespace MazeRunner.Classes
             {
                 for (int j = 0; j < Input.GetLength(1); j++)
                 {
-                    _input[k] = Input[i, j];
+                    _input[k++] = Input[i, j];
                 }
             }
 

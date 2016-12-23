@@ -26,7 +26,7 @@ namespace MazeRunner.Classes
         private int Pop_Size;
         private int Generations;
 
-        private Network ANN;
+        public Network ANN;
 
         public static double CrossOver_Prob;
         public static double Mutate_Prob;
@@ -254,6 +254,11 @@ namespace MazeRunner.Classes
                         CharPos.ChaserX = i;
                         CharPos.ChaserY = j;
                     }
+                    else if (tmp[i, j] == (int)MazeRunner.Controls.Cell.Goal)
+                    {
+                        CharPos.GoalX = i;
+                        CharPos.GoalY = j;
+                    }
                 }
             }
             return tmp;
@@ -262,15 +267,15 @@ namespace MazeRunner.Classes
         private void RunnerMove(List<int> Movement, int[,] Map, ref CharacterPos CharPos)
         {
             int move = 0;
-            if (Movement[1] == 0 && Movement[0]== 0)
+            if (Movement[1] == 0 && Movement[0] == 0)
             {
                 move = 0; //Down
             }
-            else if (Movement[1] == 0 && Movement[0] == 1)
+            else if (Movement[1] == 1 && Movement[0] == 0)
             {
                 move = 1; //Up
             }
-            else if (Movement[1] == 1 && Movement[0] == 0)
+            else if (Movement[1] == 0 && Movement[0] == 1)
             {
                 move = 2; //Right
             }
@@ -313,11 +318,11 @@ namespace MazeRunner.Classes
             {
                 move = 0; //Down
             }
-            else if (Movement[1] == 0 && Movement[0] == 1)
+            else if (Movement[1] == 1 && Movement[0] == 0)
             {
                 move = 1; //Up
             }
-            else if (Movement[1] == 1 && Movement[0] == 0)
+            else if (Movement[1] == 0 && Movement[0] == 1)
             {
                 move = 2; //Right
             }
@@ -370,7 +375,7 @@ namespace MazeRunner.Classes
                 return false;
             }
 
-            if (Map[CharPos.RunnerX, CharPos.RunnerY] == (int)Cell.Goal)
+            if (CharPos.RunnerWon)
             {
                 return true;
             }
@@ -378,23 +383,99 @@ namespace MazeRunner.Classes
             return null;
         }
 
+        private bool isValidMove(double[] Movement, int[,] Map, CharacterPos CharPos, out int move)
+        {
+            move = 0;
+            if (Movement[1] == 0 && Movement[0] == 0)
+            {
+                move = 0; //Down
+            }
+            else if (Movement[1] == 1 && Movement[0] == 0)
+            {
+                move = 1; //Up
+            }
+            else if (Movement[1] == 0 && Movement[0] == 1)
+            {
+                move = 2; //Right
+            }
+            else if (Movement[1] == 1 && Movement[0] == 1)
+            {
+                move = 3; //Left
+            }
+
+
+            if (move == 0) //Down
+            {
+                if (CharPos.RunnerX < Map.GetLength(1) - 1 && //able to move down
+                    Map[CharPos.RunnerX + 1, CharPos.RunnerY] != (int)Cell.Obstacle // if move down is possible
+                    && Map[CharPos.RunnerX + 1, CharPos.RunnerY] != (int)Cell.Chaser // and not a sucide move
+                    )
+                {
+                    return true;
+                }
+            }
+            else if (move == 1) //Up
+            {
+                if ( CharPos.RunnerX > 0 && //able to move up
+                    Map[CharPos.RunnerX - 1, CharPos.RunnerY] != (int)Cell.Obstacle // if move down is possible
+                    && Map[CharPos.RunnerX - 1, CharPos.RunnerY] != (int)Cell.Chaser // and not a sucide move
+                    )
+                {
+                    return true;
+                }
+            }
+            else if (move == 2) //Right
+            {
+                if (CharPos.RunnerY < Map.GetLength(0) - 1 && //able to move right
+                    Map[CharPos.RunnerX, CharPos.RunnerY + 1] != (int)Cell.Obstacle // if move down is possible
+                    && Map[CharPos.RunnerX, CharPos.RunnerY + 1] != (int)Cell.Chaser // and not a sucide move
+                    )
+                {
+                    return true;
+                }
+            }
+            else if (move == 3) //Left
+            {
+                if (CharPos.RunnerY > 0 && //able to move left
+                    Map[CharPos.RunnerX, CharPos.RunnerY - 1] != (int)Cell.Obstacle // if move down is possible
+                    && Map[CharPos.RunnerX, CharPos.RunnerY - 1] != (int)Cell.Chaser // and not a sucide move
+                    )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private bool TrainedSuccessful(int[,] MapMatrix, int last_steps)
         {
             CharacterPos CharPos = new CharacterPos();
             int[,] Map = CloneMap(MapMatrix, ref CharPos);
 
-            for (int i = 0; i < last_steps; i++)
+            for (int i = 0; i <= last_steps; i++)
             {
                 var Movement = ANN.Run(Map);
-                RunnerMove(Movement, Map, ref CharPos);
-                ChaserMove(Map, ref CharPos);
-
-                var result = isWon(Map, CharPos);
-                if (result == true)
+                int move;
+                if (isValidMove(Movement, Map, CharPos, out move)) 
                 {
-                    return true;
+                    bool? result;
+
+                    RunnerMove(Movement, Map, ref CharPos);
+                    result = isWon(Map, CharPos);
+                    if (result == true)
+                    {
+                        return true;
+                    }
+
+                    ChaserMove(Map, ref CharPos);
+                    result = isWon(Map, CharPos);
+                    if (result == false)
+                    {
+                        return false;
+                    }
                 }
-                else if (result == false)
+                else
                 {
                     return false;
                 }
@@ -415,49 +496,72 @@ namespace MazeRunner.Classes
             ANN = new Network(input, output, tmp.Count, tmp);
 
             CharacterPos CharPos = new CharacterPos();
-            int[,] Map = CloneMap(MapMatrix, ref CharPos);
-
-            var trainingset = new NeuronDotNet.Core.TrainingSet(input, output);
+            int[,] Map = CloneMap(MapMatrix, ref CharPos);                       
             int trainedtmp = 0;
 
+            int i = 0;
+
+            #region Train
             while (true)
-            {
-                int i = 0;
+            {                
+                bool? result;
+                bool LearntFailed = false;
 
                 List<int> Movement = Chaser.Asmove3(Map);
                 ANN.Learn(Map, Movement);
                 RunnerMove(Movement, Map, ref CharPos);
-                ChaserMove(Map, ref CharPos);
-
-                i++;
-
-                trainedtmp++;
-                GameControl.Process pc = new GameControl.Process(gc.ShowProcess);
-                gc.Dispatcher.Invoke(pc, new object[] { i });
-
-                var result = isWon(Map, CharPos);
-                if (result != null) //lose or win
+                result = isWon(Map, CharPos);
+                if (result == true) //won
                 {
-                    if (result == false) //lose
+                    if (TrainedSuccessful(MapMatrix, i))
                     {
-                        System.Windows.MessageBox.Show("failed");
+                        System.Windows.MessageBox.Show("succeeded");
+                        break;
                     }
-                    else if (result == true) //won
+                    else //A* ran succeeded, but neural hasn't learned yet.
                     {
-                        //do sth...
-                        if (TrainedSuccessful(MapMatrix, i))
-                        {
-                            System.Windows.MessageBox.Show("succeeded");
-                            break;
-                        }
-                        else //A* ran succeeded, but neural hasn't learned yet.
-                        {
-                            Map = CloneMap(MapMatrix, ref CharPos);
-                        }
+                        Map = CloneMap(MapMatrix, ref CharPos);
+                        i = 0;
+                        LearntFailed = true;
                     }
                 }
+                if (!LearntFailed)
+                {
+                    ChaserMove(Map, ref CharPos);
+                    i++;
+                    result = isWon(Map, CharPos);
+                    if (result != null) //lose or win
+                    {
+                        if (result == false) //lose
+                        {
+                            System.Windows.MessageBox.Show("failed");
+                        }
+                        else if (result == true) //won
+                        {
+                            //do sth...
+                            if (TrainedSuccessful(MapMatrix, i))
+                            {
+                                System.Windows.MessageBox.Show("succeeded");
+                                break;
+                            }
+                            else //A* ran succeeded, but neural hasn't learned yet.
+                            {
+                                Map = CloneMap(MapMatrix, ref CharPos);
+                            }
+                        }
+                    }
+                }               
 
+                
+                trainedtmp++;
+                GameControl.Process pc = new GameControl.Process(gc.ShowProcess);
+                gc.Dispatcher.Invoke(pc, new object[] { trainedtmp });
             }
+            #endregion
+
+            GameControl.Finished fn = new GameControl.Finished(gc.SaveTrainedGA);
+            gc.Dispatcher.Invoke(fn, new object[] { ANN });
+            //gc.Dispatcher.Invoke(fn, new object[] { trainedtmp });
         }
         #endregion
 
